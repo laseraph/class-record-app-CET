@@ -25,12 +25,15 @@
             return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
         
-        // Apply dark mode if preferred
-        document.addEventListener('DOMContentLoaded', function() {
+        // Apply dark mode immediately to prevent flash of wrong theme
+        (function() {
             if (getDarkModePreference()) {
                 document.documentElement.classList.add('dark-mode');
             }
-            // Initialize icon
+        })();
+        
+        // Initialize icon after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
             const icon = document.getElementById('darkModeIcon');
             if (icon) {
                 const isDark = document.documentElement.classList.contains('dark-mode');

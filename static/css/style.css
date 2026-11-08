@@ -120,7 +120,7 @@
 }
 
 /* Dark Mode Class - Applied when user toggles dark mode */
-.dark-mode {
+html.dark-mode {
     /* Primary Colors - Slightly lighter for dark mode */
     --hcdc-primary: #1A7FBF;
     --hcdc-primary-light: #0F4A7F;
@@ -178,6 +178,14 @@ body {
 html {
     background-color: var(--hcdc-bg-secondary);
     color: var(--hcdc-text-primary);
+    min-height: 100%;
+}
+
+/* Force dark mode background on body and html */
+html.dark-mode,
+.dark-mode body {
+    background-color: var(--hcdc-bg-secondary) !important;
+    color: var(--hcdc-text-primary) !important;
 }
 
 /* Headings */
