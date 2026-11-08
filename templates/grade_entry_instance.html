@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Grade Entry - {{ course.course_code }} - Class Record{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}">{{ course.course_code }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Grade Entry</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">
+                        <i class="fas fa-graduation-cap"></i> Grade Entry - {{ course.course_code }}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>{{ course.course_title }}</h4>
+                            <p class="text-muted">
+                                Schedule: {{ course.schedule }} {{ course.days }} | Room: {{ course.room }}
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('course_detail', course_id=course.id) }}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Course
+                                </a>
+                                <a href="{{ url_for('export_course_xlsx', course_id=course.id) }}" 
+                                   class="btn btn-success">
+                                    <i class="fas fa-file-excel"></i> Export XLSX
+                                </a>
+                                <a href="{{ url_for('export_course_pdf', course_id=course.id) }}" 
+                                   class="btn btn-danger">
+                                    <i class="fas fa-file-pdf"></i> Export PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Student Selection -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Select Student</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for student in students %}
+                        <div class="col-md-3 mb-2">
+                            <a href="?student_id={{ student.id }}" 
+                               class="btn btn-{{ 'primary' if current_student_id == student.id else 'outline-primary' }} w-100">
+                                {{ student.last_name }}, {{ student.first_name }}
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Grade Entry Form -->
+    <form method="POST" action="">
+        <input type="hidden" name="student_id" value="{{ current_student_id }}">
+        
+        {% if current_student_id %}
+        {% set current_student = students|selectattr('id', 'equalto', current_student_id)|first %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h4 class="mb-0">
+                            Grading for: {{ current_student.last_name }}, {{ current_student.first_name }} 
+                            (ID: {{ current_student.id_number }})
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        
+                        <!-- Prelim-Mid Period -->
+                        <div class="mb-4">
+                            <h3 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-calendar-alt"></i> Prelim-Mid Period
+                                <small class="text-muted float-end">
+                                    Total: <strong>{{ "%.2f"|format(prelim_total) }}%</strong>
+                                </small>
+                            </h3>
+                            
+                            {% for component_name, instances in instances_by_component.items() %}
+                            {% if instances|selectattr('period', 'equalto', 'prelim_mid')|list|length > 0 %}
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">{{ component_name }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% for inst in instances %}
+                                        {% if inst.period == 'prelim_mid' %}
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-group">
+                                                <label for="score_{{ inst.id }}" class="form-label small">
+                                                    {{ inst.title }} (Max: {{ inst.max_score }})
+                                                </label>
+                                                <input type="number" 
+                                                       class="form-control form-control-sm" 
+                                                       id="score_{{ inst.id }}" 
+                                                       name="score_{{ inst.id }}"
+                                                       min="0" 
+                                                       max="{{ inst.max_score }}"
+                                                       step="0.01"
+                                                       value="{{ scores.get(inst.id, 0)|float|round(2) }}"
+                                                       required>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Semis-Final Period -->
+                        <div class="mb-4">
+                            <h3 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-calendar-alt"></i> Semis-Final Period
+                                <small class="text-muted float-end">
+                                    Total: <strong>{{ "%.2f"|format(semis_total) }}%</strong>
+                                </small>
+                            </h3>
+                            
+                            {% for component_name, instances in instances_by_component.items() %}
+                            {% if instances|selectattr('period', 'equalto', 'semis_final')|list|length > 0 %}
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">{{ component_name }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% for inst in instances %}
+                                        {% if inst.period == 'semis_final' %}
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-group">
+                                                <label for="score_{{ inst.id }}" class="form-label small">
+                                                    {{ inst.title }} (Max: {{ inst.max_score }})
+                                                </label>
+                                                <input type="number" 
+                                                       class="form-control form-control-sm" 
+                                                       id="score_{{ inst.id }}" 
+                                                       name="score_{{ inst.id }}"
+                                                       min="0" 
+                                                       max="{{ inst.max_score }}"
+                                                       step="0.01"
+                                                       value="{{ scores.get(inst.id, 0)|float|round(2) }}"
+                                                       required>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Summary -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h5>Prelim-Mid Total:</h5>
+                                        <p class="display-6 text-primary">{{ "%.2f"|format(prelim_total) }}%</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h5>Semis-Final Total:</h5>
+                                        <p class="display-6 text-primary">{{ "%.2f"|format(semis_total) }}%</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        {% if grade_summary %}
+                                        <h5>Final Grade:</h5>
+                                        <p class="display-6 text-success">{{ "%.2f"|format(grade_summary.final_grade) }}%</p>
+                                        <p class="mb-0">
+                                            <strong>{{ grade_summary.letter_grade }}</strong> - {{ grade_summary.remarks }}
+                                        </p>
+                                        {% else %}
+                                        <h5>Final Grade:</h5>
+                                        <p class="display-6">N/A</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Save Grades
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Auto-calculate totals when scores change
+    $('input[type="number"]').on('change', function() {
+        // This is handled server-side on submit
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Grading Criteria - {{ course.course_code }} - Class Record{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}">{{ course.course_code }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Grading Criteria</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">
+                        <i class="fas fa-cogs"></i> Grading Criteria Management - {{ course.course_code }}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Manage grading components and their instances. Each component can have multiple instances 
+                        (e.g., Assignment 1, Assignment 2, etc.) with individual weight fractions.
+                    </p>
+                    <p class="text-muted">
+                        <strong>Note:</strong> Major exams (Pre/Semi and Mid/Fin) must maintain 25% each. 
+                        Class standing components (Assignments, Quizzes, etc.) can have varying percentages 
+                        that sum to 50% per period.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Current Grading Criteria -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Current Grading Criteria</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Category</th>
+                                    <th>Prelim-Mid %</th>
+                                    <th>Semis-Final %</th>
+                                    <th>Total %</th>
+                                    <th>Instances</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for comp in components %}
+                                <tr>
+                                    <td><strong>{{ comp.name }}</strong></td>
+                                    <td>{{ comp.category }}</td>
+                                    <td>
+                                        <form method="POST" class="d-inline">
+                                            <input type="hidden" name="action" value="update_component">
+                                            <input type="hidden" name="component_id" value="{{ comp.id }}">
+                                            <input type="number" name="prelim_{{ comp.id }}" 
+                                                   value="{{ comp.prelim_mid_weight }}" 
+                                                   step="0.1" min="0" class="form-control form-control-sm d-inline w-auto">
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-sync"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form method="POST" class="d-inline">
+                                            <input type="hidden" name="action" value="update_component">
+                                            <input type="hidden" name="component_id" value="{{ comp.id }}">
+                                            <input type="number" name="semis_{{ comp.id }}" 
+                                                   value="{{ comp.semis_final_weight }}" 
+                                                   step="0.1" min="0" class="form-control form-control-sm d-inline w-auto">
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-sync"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td>{{ comp.prelim_mid_weight + comp.semis_final_weight }}%</td>
+                                    <td>
+                                        {% set comp_instances = instances_by_component.get(comp.name, []) %}
+                                        {{ comp_instances|length }} instances
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" 
+                                                data-bs-target="#addInstanceModal-{{ comp.id }}">
+                                            <i class="fas fa-plus"></i> Add Instance
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-dark">
+                                <tr>
+                                    <th colspan="2">TOTALS</th>
+                                    <th>{{ components|sum(attribute='prelim_mid_weight')|round(2) }}%</th>
+                                    <th>{{ components|sum(attribute='semis_final_weight')|round(2) }}%</th>
+                                    <th>{{ components|sum(attribute='prelim_mid_weight') + components|sum(attribute='semis_final_weight')|round(2) }}%</th>
+                                    <th>{{ instances|length }} total</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Component Instances -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">Component Instances</h4>
+                </div>
+                <div class="card-body">
+                    
+                    {% for comp_name, comp_instances in instances_by_component.items() %}
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2">{{ comp_name }}</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Title</th>
+                                        <th>Max Score</th>
+                                        <th>Weight Fraction</th>
+                                        <th>Period</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for inst in comp_instances %}
+                                    <tr>
+                                        <td>{{ inst.instance_number }}</td>
+                                        <td>{{ inst.title }}</td>
+                                        <td>{{ inst.max_score }}</td>
+                                        <td>{{ "%.4f"|format(inst.weight_fraction) }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'primary' if inst.period == 'prelim_mid' else 'success' }}">
+                                                {{ inst.period|replace('_', ' ')|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <form method="POST" class="d-inline">
+                                                <input type="hidden" name="action" value="update_instance">
+                                                <input type="hidden" name="instance_id" value="{{ inst.id }}">
+                                                <input type="text" name="title_{{ inst.id }}" 
+                                                       value="{{ inst.title }}" class="form-control form-control-sm d-inline w-auto">
+                                                <input type="number" name="max_score_{{ inst.id }}" 
+                                                       value="{{ inst.max_score }}" step="0.1" 
+                                                       class="form-control form-control-sm d-inline w-auto">
+                                                <input type="number" name="weight_fraction_{{ inst.id }}" 
+                                                       value="{{ inst.weight_fraction }}" step="0.01" min="0" max="1"
+                                                       class="form-control form-control-sm d-inline w-auto">
+                                                <button type="submit" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-save"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" class="d-inline">
+                                                <input type="hidden" name="action" value="delete_instance">
+                                                <input type="hidden" name="instance_id" value="{{ inst.id }}">
+                                                <button type="submit" class="btn btn-sm btn-danger" 
+                                                        onclick="return confirm('Are you sure?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Component Modal -->
+    <div class="modal fade" id="addComponentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Add New Component</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="add_component">
+                        <div class="mb-3">
+                            <label class="form-label">Component Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-select">
+                                <option value="class_standing">Class Standing</option>
+                                <option value="major_exam">Major Exam</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Prelim-Mid Weight (%)</label>
+                            <input type="number" name="prelim_weight" class="form-control" step="0.1" value="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Semis-Final Weight (%)</label>
+                            <input type="number" name="semis_weight" class="form-control" step="0.1" value="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Max Score</label>
+                            <input type="number" name="max_score" class="form-control" value="100">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Component</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Instance Modals (one per component) -->
+    {% for comp in components %}
+    <div class="modal fade" id="addInstanceModal-{{ comp.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">Add Instance to {{ comp.name }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="add_instance">
+                        <input type="hidden" name="component_id" value="{{ comp.id }}">
+                        <div class="mb-3">
+                            <label class="form-label">Instance Number</label>
+                            <input type="number" name="instance_number" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Max Score</label>
+                            <input type="number" name="max_score" class="form-control" value="{{ comp.max_score }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Weight Fraction (0-1)</label>
+                            <input type="number" name="weight_fraction" class="form-control" 
+                                   step="0.01" min="0" max="1" value="1.0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Period</label>
+                            <select name="period" class="form-select">
+                                <option value="prelim_mid">Prelim-Mid</option>
+                                <option value="semis_final">Semis-Final</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Add Instance</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addComponentModal">
+                <i class="fas fa-plus"></i> Add New Component
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
