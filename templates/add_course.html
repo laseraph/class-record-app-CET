@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Add Course - Class Record App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Add Course</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Course</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Course Code <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="course_code" required>
+                        <small class="text-muted">e.g., Math 201E (2018)</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Course Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="course_title" required>
+                        <small class="text-muted">e.g., Differential Equations</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Offering Number</label>
+                        <input type="text" class="form-control" name="offering_number" value="1">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Schedule</label>
+                        <input type="text" class="form-control" name="schedule" placeholder="e.g., 8:00-9:00 AM">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Days</label>
+                        <input type="text" class="form-control" name="days" placeholder="e.g., MWF">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Room</label>
+                        <input type="text" class="form-control" name="room" placeholder="e.g., CH504">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="Course description..."></textarea>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save Course
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> Information</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                <strong>Required fields:</strong> Course Code and Course Title
+            </p>
+            <p>
+                After creating a course, default grading components will be automatically added:
+                <ul>
+                    <li>Assignments (10% Prelim-Mid, 10% Semis-Final)</li>
+                    <li>Oral Recitation (5% each)</li>
+                    <li>Seatwork (5% each)</li>
+                    <li>Quizzes (30% each)</li>
+                    <li>Pre / Semi exam (25% each)</li>
+                    <li>Mid / Fin exam (25% each)</li>
+                </ul>
+            </p>
+            <p>
+                You can modify these components in the Grading Criteria section after creating the course.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

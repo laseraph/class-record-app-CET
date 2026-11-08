@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Enter Grades - {{ course.course_title }} - Class Record App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}">{{ course.course_title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Enter Grades</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Enter Grades - {{ course.course_title }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="">
+                <!-- Bigrade Selection -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Select Bigrade Period:</label>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="bigrade" id="prelim" value="prelim_mid" checked>
+                        <label class="btn btn-outline-primary" for="prelim">
+                            <i class="bi bi-calendar-check"></i> Prelim-Mid
+                        </label>
+                        <input type="radio" class="btn-check" name="bigrade" id="semis" value="semis_final">
+                        <label class="btn btn-outline-primary" for="semis">
+                            <i class="bi bi-calendar-x"></i> Semis-Final
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Student Selection -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Select Student:</label>
+                    <select class="form-select" name="student_id" id="studentSelect" onchange="updateGradeFields()">
+                        {% for student in students %}
+                        <option value="{{ student.id }}" {% if student.id == current_student_id %}selected{% endif %}>
+                            {{ student.last_name }}, {{ student.first_name }} ({{ student.id_number }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Grade Input Fields -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Grade Components:</label>
+                    <div class="row">
+                        {% for comp in components %}
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">
+                                {{ comp.name }} (Max: {{ comp.max_score }})
+                            </label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   name="grade_{{ comp.id }}"
+                                   id="grade_{{ comp.id }}"
+                                   min="0" 
+                                   max="{{ comp.max_score }}"
+                                   step="0.01"
+                                   value="0">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save Grades
+                    </button>
+                    <button type="submit" name="save_and_next" value="1" class="btn btn-success">
+                        <i class="bi bi-save"></i> Save & Next Student
+                    </button>
+                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student Navigation -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-list"></i> Student List</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>ID Number</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr class="{% if student.id == current_student_id %}table-active{% endif %}">
+                            <td>{{ loop.index }}</td>
+                            <td>{{ student.last_name }}, {{ student.first_name }}</td>
+                            <td>{{ student.id_number }}</td>
+                            <td>
+                                <span class="badge bg-success">Active</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="selectStudent({{ student.id }})">
+                                    <i class="bi bi-arrow-right"></i> Select
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Course
+        </a>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function selectStudent(studentId) {
+    document.getElementById('studentSelect').value = studentId;
+    updateGradeFields();
+}
+
+function updateGradeFields() {
+    // This would fetch the current grades for the selected student via AJAX
+    // For now, it just updates the UI
+    const studentId = document.getElementById('studentSelect').value;
+    // Highlight the selected row
+    const rows = document.querySelectorAll('table tbody tr');
+    rows.forEach(row => {
+        row.classList.remove('table-active');
+        if (row.dataset.studentId === studentId) {
+            row.classList.add('table-active');
+        }
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}
