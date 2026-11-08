@@ -142,7 +142,7 @@ class Course:
             letter_grade = self.grades.get(student.id_number, {}).get("letter_grade", "F")
             if letter_grade in distribution:
                 distribution[letter_grade] += 1
-        for key in distribution:
+        for key in list(distribution.keys()):
             distribution[f"{key}_pct"] = (distribution[key] / total * 100) if total > 0 else 0
         return distribution
     
