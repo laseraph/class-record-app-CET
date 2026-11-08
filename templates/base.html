@@ -11,13 +11,21 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
+    <style>
+        /* HCDC Theme Overrides */
+        .bg-hcdc-maroon { background-color: #800000; }
+        .text-hcdc-maroon { color: #800000; }
+        .bg-hcdc-royal-blue { background-color: #005AB5; }
+        .text-hcdc-royal-blue { color: #005AB5; }
+        .border-hcdc-royal-blue { border-color: #005AB5; }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                <i class="bi bi-mortarboard-fill"></i> Class Record App
+                <i class="bi bi-mortarboard-fill"></i> HCDC Class Record
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -53,12 +61,17 @@
     <main class="container-fluid mt-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                <i class="bi bi-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }}"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
         
@@ -66,9 +79,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light py-3 mt-5">
-        <div class="container-fluid text-center text-muted">
-            <small>Class Record App &copy; 2024</small>
+    <footer class="bg-secondary py-3 mt-5 text-white">
+        <div class="container-fluid text-center">
+            <small>HCDC Class Record Application &copy; 2024 | CET Department</small>
         </div>
     </footer>
 

@@ -21,7 +21,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h2 class="mb-0">
-                        <i class="fas fa-graduation-cap"></i> Grade Entry - {{ course.course_code }}
+                        <i class="bi bi-graduation-cap"></i> Grade Entry - {{ course.course_code }}
                     </h2>
                 </div>
                 <div class="card-body">
@@ -36,15 +36,15 @@
                             <div class="btn-group" role="group">
                                 <a href="{{ url_for('course_detail', course_id=course.id) }}" 
                                    class="btn btn-outline-secondary">
-                                    <i class="fas fa-arrow-left"></i> Back to Course
+                                    <i class="bi bi-arrow-left"></i> Back to Course
                                 </a>
                                 <a href="{{ url_for('export_course_xlsx', course_id=course.id) }}" 
                                    class="btn btn-success">
-                                    <i class="fas fa-file-excel"></i> Export XLSX
+                                    <i class="bi bi-file-excel"></i> Export XLSX
                                 </a>
                                 <a href="{{ url_for('export_course_pdf', course_id=course.id) }}" 
                                    class="btn btn-danger">
-                                    <i class="fas fa-file-pdf"></i> Export PDF
+                                    <i class="bi bi-file-pdf"></i> Export PDF
                                 </a>
                             </div>
                         </div>
@@ -97,7 +97,7 @@
                         <!-- Prelim-Mid Period -->
                         <div class="mb-4">
                             <h3 class="text-primary border-bottom pb-2">
-                                <i class="fas fa-calendar-alt"></i> Prelim-Mid Period
+                                <i class="bi bi-calendar-alt"></i> Prelim-Mid Period
                                 <small class="text-muted float-end">
                                     Total: <strong>{{ "%.2f"|format(prelim_total) }}%</strong>
                                 </small>
@@ -141,7 +141,7 @@
                         <!-- Semis-Final Period -->
                         <div class="mb-4">
                             <h3 class="text-primary border-bottom pb-2">
-                                <i class="fas fa-calendar-alt"></i> Semis-Final Period
+                                <i class="bi bi-calendar-alt"></i> Semis-Final Period
                                 <small class="text-muted float-end">
                                     Total: <strong>{{ "%.2f"|format(semis_total) }}%</strong>
                                 </small>
@@ -212,7 +212,7 @@
                         
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-save"></i> Save Grades
+                                <i class="bi bi-save"></i> Save Grades
                             </button>
                         </div>
                         

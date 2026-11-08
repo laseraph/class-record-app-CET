@@ -21,7 +21,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h2 class="mb-0">
-                        <i class="fas fa-cogs"></i> Grading Criteria Management - {{ course.course_code }}
+                        <i class="bi bi-cogs"></i> Grading Criteria Management - {{ course.course_code }}
                     </h2>
                 </div>
                 <div class="card-body">
@@ -73,7 +73,7 @@
                                                    value="{{ comp.prelim_mid_weight }}" 
                                                    step="0.1" min="0" class="form-control form-control-sm d-inline w-auto">
                                             <button type="submit" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-sync"></i>
+                                                <i class="bi bi-sync"></i>
                                             </button>
                                         </form>
                                     </td>
@@ -85,7 +85,7 @@
                                                    value="{{ comp.semis_final_weight }}" 
                                                    step="0.1" min="0" class="form-control form-control-sm d-inline w-auto">
                                             <button type="submit" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-sync"></i>
+                                                <i class="bi bi-sync"></i>
                                             </button>
                                         </form>
                                     </td>
@@ -97,7 +97,7 @@
                                     <td>
                                         <button class="btn btn-sm btn-success" data-bs-toggle="modal" 
                                                 data-bs-target="#addInstanceModal-{{ comp.id }}">
-                                            <i class="fas fa-plus"></i> Add Instance
+                                            <i class="bi bi-plus"></i> Add Instance
                                         </button>
                                     </td>
                                 </tr>
@@ -169,7 +169,7 @@
                                                        value="{{ inst.weight_fraction }}" step="0.01" min="0" max="1"
                                                        class="form-control form-control-sm d-inline w-auto">
                                                 <button type="submit" class="btn btn-sm btn-info">
-                                                    <i class="fas fa-save"></i>
+                                                    <i class="bi bi-save"></i>
                                                 </button>
                                             </form>
                                             <form method="POST" class="d-inline">
@@ -177,7 +177,7 @@
                                                 <input type="hidden" name="instance_id" value="{{ inst.id }}">
                                                 <button type="submit" class="btn btn-sm btn-danger" 
                                                         onclick="return confirm('Are you sure?')">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
                                         </td>
@@ -288,7 +288,7 @@
     <div class="row">
         <div class="col-12 text-center mb-4">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addComponentModal">
-                <i class="fas fa-plus"></i> Add New Component
+                <i class="bi bi-plus"></i> Add New Component
             </button>
         </div>
     </div>
