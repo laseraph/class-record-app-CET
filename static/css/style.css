@@ -119,6 +119,50 @@
     }
 }
 
+/* Dark Mode Class - Applied when user toggles dark mode */
+.dark-mode {
+    /* Primary Colors - Slightly lighter for dark mode */
+    --hcdc-primary: #1A7FBF;
+    --hcdc-primary-light: #0F4A7F;
+    --hcdc-primary-dark: #0A3D6A;
+    
+    /* Secondary Colors - Slightly lighter for dark mode */
+    --hcdc-secondary: #A02020;
+    --hcdc-secondary-light: #5A1A1A;
+    --hcdc-secondary-dark: #800000;
+    
+    /* Neutral Colors */
+    --hcdc-white: #FFFFFF;
+    --hcdc-off-white: #1A1A2E;
+    --hcdc-light-gray: #16213E;
+    --hcdc-medium-gray: #8B98B5;
+    --hcdc-dark-gray: #C5C6C7;
+    --hcdc-black: #E0E0E0;
+    
+    /* Background & Surface Colors */
+    --hcdc-bg-primary: #0F172A;
+    --hcdc-bg-secondary: #1A1A2E;
+    --hcdc-bg-tertiary: #0D1117;
+    --hcdc-surface: #16213E;
+    
+    /* Text Colors */
+    --hcdc-text-primary: #E0E0E0;
+    --hcdc-text-secondary: #A0A0A0;
+    --hcdc-text-muted: #6C757D;
+    --hcdc-text-inverse: #1A1A2E;
+    
+    /* Border Colors */
+    --hcdc-border-light: #3D4465;
+    --hcdc-border-medium: #4A5568;
+    --hcdc-border-dark: #2D3748;
+    
+    /* Shadow Colors */
+    --hcdc-shadow-sm: rgba(0, 0, 0, 0.2);
+    --hcdc-shadow: rgba(0, 0, 0, 0.3);
+    --hcdc-shadow-md: rgba(0, 0, 0, 0.4);
+    --hcdc-shadow-lg: rgba(0, 0, 0, 0.5);
+}
+
 /* Base Typography */
 body {
     font-family: var(--font-primary);
@@ -128,6 +172,12 @@ body {
     background-color: var(--hcdc-bg-secondary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure html element also uses correct background */
+html {
+    background-color: var(--hcdc-bg-secondary);
+    color: var(--hcdc-text-primary);
 }
 
 /* Headings */

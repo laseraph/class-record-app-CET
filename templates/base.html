@@ -22,13 +22,21 @@
         function getDarkModePreference() {
             const saved = localStorage.getItem('darkMode');
             if (saved) return saved === 'true';
-            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
         
         // Apply dark mode if preferred
-        if (getDarkModePreference()) {
-            document.documentElement.classList.add('dark-mode');
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            if (getDarkModePreference()) {
+                document.documentElement.classList.add('dark-mode');
+            }
+            // Initialize icon
+            const icon = document.getElementById('darkModeIcon');
+            if (icon) {
+                const isDark = document.documentElement.classList.contains('dark-mode');
+                icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+            }
+        });
     </script>
 </head>
 <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
@@ -116,15 +124,10 @@
             
             // Update icon
             const icon = document.getElementById('darkModeIcon');
-            icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+            if (icon) {
+                icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+            }
         }
-        
-        // Initialize dark mode icon
-        document.addEventListener('DOMContentLoaded', function() {
-            const icon = document.getElementById('darkModeIcon');
-            const isDark = document.documentElement.classList.contains('dark-mode');
-            icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
-        });
     </script>
     
     {% block extra_js %}{% endblock %}
