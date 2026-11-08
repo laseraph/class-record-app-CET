@@ -1,47 +1,107 @@
-/* Custom styles for Class Record App - HCDC Theme */
+/* Custom styles for Class Record App - HCDC Professional Theme */
 /* HCDC Color Scheme: Maroon (#800000), Royal Blue (#005AB5), White (#FFFFFF) */
+/* Professional Font: Inter (clean, modern, professional) */
 
-/* Override Bootstrap primary color to HCDC Royal Blue */
+/* Import Professional Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* CSS Variables for HCDC Theme */
 :root {
-    --bs-primary: #005AB5;
-    --bs-primary-rgb: 0, 90, 181;
-    --bs-secondary: #800000;
-    --bs-secondary-rgb: 128, 0, 0;
-    --bs-success: #28a745;
-    --bs-info: #17a2b8;
-    --bs-warning: #ffc107;
-    --bs-danger: #dc3545;
-    
-    --hcdc-maroon: #800000;
+    /* Primary Colors */
     --hcdc-royal-blue: #005AB5;
+    --hcdc-royal-blue-light: #E6F0FA;
+    --hcdc-royal-blue-dark: #004A95;
+    
+    /* Secondary Colors */
+    --hcdc-maroon: #800000;
+    --hcdc-maroon-light: #F5E6E8;
+    --hcdc-maroon-dark: #660000;
+    
+    /* Neutral Colors */
     --hcdc-white: #FFFFFF;
-    --hcdc-light: #f8f9fa;
-    --hcdc-dark: #212529;
+    --hcdc-off-white: #F8F9FA;
+    --hcdc-light-gray: #E9ECEF;
+    --hcdc-medium-gray: #6C757D;
+    --hcdc-dark-gray: #495057;
+    --hcdc-black: #212529;
+    
+    /* Semantic Colors (based on HCDC scheme) */
+    --hcdc-success: #005AB5;  /* Using royal blue for success */
+    --hcdc-warning: #800000;  /* Using maroon for warnings */
+    --hcdc-danger: #660000;   /* Darker maroon for errors */
+    --hcdc-info: #004A95;     /* Darker royal blue for info */
+    
+    /* Font */
+    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Body styling */
+/* Override Bootstrap colors to match HCDC */
+:root {
+    --bs-primary: var(--hcdc-royal-blue);
+    --bs-primary-rgb: 0, 90, 181;
+    --bs-primary-bg-subtle: var(--hcdc-royal-blue-light);
+    
+    --bs-secondary: var(--hcdc-maroon);
+    --bs-secondary-rgb: 128, 0, 0;
+    --bs-secondary-bg-subtle: var(--hcdc-maroon-light);
+    
+    --bs-success: var(--hcdc-success);
+    --bs-success-rgb: 0, 90, 181;
+    
+    --bs-info: var(--hcdc-info);
+    --bs-info-rgb: 0, 74, 149;
+    
+    --bs-warning: var(--hcdc-warning);
+    --bs-warning-rgb: 128, 0, 0;
+    
+    --bs-danger: var(--hcdc-danger);
+    --bs-danger-rgb: 102, 0, 0;
+}
+
+/* Base Typography */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--hcdc-light);
-    color: var(--hcdc-dark);
+    font-family: var(--font-primary);
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--hcdc-black);
+    background-color: var(--hcdc-off-white);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Navbar styling - HCDC Royal Blue */
+/* Headings */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: var(--font-primary);
+    font-weight: 600;
+    color: var(--hcdc-black);
+    letter-spacing: -0.02em;
+}
+
+h1 { font-size: 1.8rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.3rem; }
+h4 { font-size: 1.1rem; }
+
+/* ============================================
+   NAVBAR
+   ============================================ */
 .navbar {
     background-color: var(--hcdc-royal-blue) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    padding: 0.5rem 0;
+    box-shadow: 0 2px 10px rgba(0, 90, 181, 0.15);
+    padding: 0.75rem 0;
+    font-family: var(--font-primary);
 }
 
 .navbar-brand {
     font-weight: 700;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     color: var(--hcdc-white) !important;
-    letter-spacing: 0.5px;
+    letter-spacing: -0.01em;
 }
 
 .navbar-brand:hover {
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .navbar-nav .nav-link {
@@ -49,16 +109,18 @@ body {
     font-weight: 500;
     padding: 0.5rem 1rem;
     transition: all 0.2s ease;
+    font-family: var(--font-primary);
 }
 
 .navbar-nav .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.12);
     color: var(--hcdc-white) !important;
 }
 
 .navbar-nav .nav-link.active {
     background-color: rgba(255, 255, 255, 0.2);
     color: var(--hcdc-white) !important;
+    font-weight: 600;
 }
 
 .navbar-toggler {
@@ -69,17 +131,20 @@ body {
     filter: brightness(0) invert(1);
 }
 
-/* Card styling */
+/* ============================================
+   CARDS
+   ============================================ */
 .card {
     border: none;
     border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 90, 181, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     margin-bottom: 1.5rem;
+    font-family: var(--font-primary);
 }
 
 .card:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 90, 181, 0.12);
     transform: translateY(-2px);
 }
 
@@ -87,41 +152,40 @@ body {
     border-radius: 12px 12px 0 0 !important;
     padding: 1rem 1.5rem;
     font-weight: 600;
+    font-family: var(--font-primary);
+    letter-spacing: -0.01em;
 }
 
-/* Primary card header (Royal Blue) */
 .card-header.bg-primary {
     background-color: var(--hcdc-royal-blue) !important;
     color: var(--hcdc-white) !important;
     border: none;
 }
 
-/* Secondary card header (Maroon) */
 .card-header.bg-secondary {
     background-color: var(--hcdc-maroon) !important;
     color: var(--hcdc-white) !important;
     border: none;
 }
 
-/* Info card header */
 .card-header.bg-info {
-    background-color: var(--bs-info) !important;
+    background-color: var(--hcdc-info) !important;
     color: var(--hcdc-white) !important;
     border: none;
 }
 
-/* Success card header */
-.card-header.bg-success {
-    background-color: var(--bs-success) !important;
-    color: var(--hcdc-white) !important;
-    border: none;
+.card-body {
+    padding: 1.5rem;
 }
 
-/* Table styling */
+/* ============================================
+   TABLES
+   ============================================ */
 .table {
     margin-bottom: 0;
     border-radius: 8px;
     overflow: hidden;
+    font-family: var(--font-primary);
 }
 
 .table th {
@@ -131,12 +195,16 @@ body {
     padding: 12px 15px;
     font-weight: 600;
     text-align: center;
+    font-size: 0.9rem;
+    letter-spacing: -0.01em;
 }
 
 .table td {
     padding: 12px 15px;
     vertical-align: middle;
     text-align: center;
+    font-family: var(--font-primary);
+    font-weight: 400;
 }
 
 .table tbody tr {
@@ -144,7 +212,7 @@ body {
 }
 
 .table tbody tr:hover {
-    background-color: rgba(0, 90, 181, 0.05);
+    background-color: var(--hcdc-royal-blue-light);
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
@@ -152,66 +220,42 @@ body {
 }
 
 .table-bordered {
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--hcdc-light-gray);
 }
 
 .table-bordered th,
 .table-bordered td {
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--hcdc-light-gray);
 }
 
-/* Badge styling */
-.badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 500;
-    font-size: 0.85rem;
-}
-
-.badge.bg-primary {
-    background-color: var(--hcdc-royal-blue);
-}
-
-.badge.bg-success {
-    background-color: var(--bs-success);
-}
-
-.badge.bg-danger {
-    background-color: var(--bs-danger);
-}
-
-.badge.bg-warning {
-    background-color: var(--bs-warning);
-    color: var(--hcdc-dark);
-}
-
-.badge.bg-info {
-    background-color: var(--bs-info);
-}
-
-.badge.bg-secondary {
-    background-color: var(--hcdc-maroon);
-}
-
-/* Button styling */
+/* ============================================
+   BUTTONS
+   ============================================ */
 .btn {
     border-radius: 8px;
     padding: 10px 20px;
     font-weight: 500;
     transition: all 0.2s ease;
     border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 90, 181, 0.15);
+    font-family: var(--font-primary);
+    letter-spacing: -0.01em;
 }
 
 .btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 90, 181, 0.2);
 }
 
 .btn:active {
     transform: translateY(0);
 }
 
+.btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(0, 90, 181, 0.25);
+}
+
+/* Primary Button - Royal Blue */
 .btn-primary {
     background-color: var(--hcdc-royal-blue);
     border-color: var(--hcdc-royal-blue);
@@ -219,11 +263,12 @@ body {
 }
 
 .btn-primary:hover {
-    background-color: #004a95;
-    border-color: #004a95;
+    background-color: var(--hcdc-royal-blue-dark);
+    border-color: var(--hcdc-royal-blue-dark);
     color: var(--hcdc-white);
 }
 
+/* Secondary Button - Maroon */
 .btn-secondary {
     background-color: var(--hcdc-maroon);
     border-color: var(--hcdc-maroon);
@@ -231,29 +276,12 @@ body {
 }
 
 .btn-secondary:hover {
-    background-color: #660000;
-    border-color: #660000;
+    background-color: var(--hcdc-maroon-dark);
+    border-color: var(--hcdc-maroon-dark);
     color: var(--hcdc-white);
 }
 
-.btn-success {
-    background-color: var(--bs-success);
-    border-color: var(--bs-success);
-    color: var(--hcdc-white);
-}
-
-.btn-danger {
-    background-color: var(--bs-danger);
-    border-color: var(--bs-danger);
-    color: var(--hcdc-white);
-}
-
-.btn-info {
-    background-color: var(--bs-info);
-    border-color: var(--bs-info);
-    color: var(--hcdc-white);
-}
-
+/* Outline Buttons */
 .btn-outline-primary {
     color: var(--hcdc-royal-blue);
     border-color: var(--hcdc-royal-blue);
@@ -262,6 +290,7 @@ body {
 .btn-outline-primary:hover {
     background-color: var(--hcdc-royal-blue);
     color: var(--hcdc-white);
+    border-color: var(--hcdc-royal-blue);
 }
 
 .btn-outline-secondary {
@@ -272,8 +301,10 @@ body {
 .btn-outline-secondary:hover {
     background-color: var(--hcdc-maroon);
     color: var(--hcdc-white);
+    border-color: var(--hcdc-maroon);
 }
 
+/* Button Groups */
 .btn-group .btn {
     border-radius: 8px;
     margin: 0 2px;
@@ -291,116 +322,180 @@ body {
     border-radius: 0;
 }
 
-/* Alert styling */
+/* ============================================
+   BADGES
+   ============================================ */
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    font-family: var(--font-primary);
+}
+
+.badge.bg-primary {
+    background-color: var(--hcdc-royal-blue);
+    color: var(--hcdc-white);
+}
+
+.badge.bg-secondary {
+    background-color: var(--hcdc-maroon);
+    color: var(--hcdc-white);
+}
+
+.badge.bg-success {
+    background-color: var(--hcdc-royal-blue);
+    color: var(--hcdc-white);
+}
+
+.badge.bg-danger {
+    background-color: var(--hcdc-maroon);
+    color: var(--hcdc-white);
+}
+
+.badge.bg-warning {
+    background-color: var(--hcdc-maroon-light);
+    color: var(--hcdc-maroon-dark);
+}
+
+.badge.bg-info {
+    background-color: var(--hcdc-royal-blue);
+    color: var(--hcdc-white);
+}
+
+/* ============================================
+   ALERTS
+   ============================================ */
 .alert {
     border: none;
     border-radius: 8px;
     padding: 1rem 1.25rem;
     margin-bottom: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: var(--font-primary);
 }
 
 .alert-primary {
-    background-color: rgba(0, 90, 181, 0.15);
-    color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-royal-blue-light);
+    color: var(--hcdc-royal-blue-dark);
+    border-left: 4px solid var(--hcdc-royal-blue);
 }
 
 .alert-success {
-    background-color: rgba(40, 167, 69, 0.15);
-    color: var(--bs-success);
+    background-color: var(--hcdc-royal-blue-light);
+    color: var(--hcdc-royal-blue-dark);
+    border-left: 4px solid var(--hcdc-royal-blue);
 }
 
 .alert-danger {
-    background-color: rgba(220, 53, 69, 0.15);
-    color: var(--bs-danger);
+    background-color: var(--hcdc-maroon-light);
+    color: var(--hcdc-maroon-dark);
+    border-left: 4px solid var(--hcdc-maroon);
 }
 
 .alert-warning {
-    background-color: rgba(255, 193, 7, 0.15);
-    color: var(--bs-warning);
+    background-color: var(--hcdc-maroon-light);
+    color: var(--hcdc-maroon-dark);
+    border-left: 4px solid var(--hcdc-maroon);
 }
 
 .alert-info {
-    background-color: rgba(23, 162, 184, 0.15);
-    color: var(--bs-info);
+    background-color: var(--hcdc-royal-blue-light);
+    color: var(--hcdc-royal-blue-dark);
+    border-left: 4px solid var(--hcdc-royal-blue);
 }
 
-/* Form styling */
+/* ============================================
+   FORMS
+   ============================================ */
 .form-control, .form-select {
     border-radius: 8px;
     padding: 10px 15px;
-    border: 2px solid #ced4da;
+    border: 2px solid var(--hcdc-light-gray);
     transition: all 0.2s ease;
     height: calc(1.5em + 0.75rem + 2px);
+    font-family: var(--font-primary);
+    font-weight: 400;
 }
 
 .form-control:focus, .form-select:focus {
     border-color: var(--hcdc-royal-blue);
     box-shadow: 0 0 0 0.25rem rgba(0, 90, 181, 0.25);
+    outline: none;
 }
 
 .form-control:hover:not(:focus) {
-    border-color: #adb5bd;
+    border-color: var(--hcdc-medium-gray);
 }
 
 .form-label {
     font-weight: 500;
-    color: var(--hcdc-dark);
+    color: var(--hcdc-black);
     margin-bottom: 0.5rem;
+    font-family: var(--font-primary);
 }
 
-/* Breadcrumb styling */
+.form-check-input:checked {
+    background-color: var(--hcdc-royal-blue);
+    border-color: var(--hcdc-royal-blue);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(0, 90, 181, 0.25);
+}
+
+/* ============================================
+   BREADCRUMB
+   ============================================ */
 .breadcrumb {
     background-color: transparent;
     padding: 0;
     margin-bottom: 1.5rem;
+    font-family: var(--font-primary);
 }
 
 .breadcrumb-item + .breadcrumb-item::before {
-    color: #6c757d;
+    color: var(--hcdc-medium-gray);
     content: ">";
+    font-family: var(--font-primary);
 }
 
 .breadcrumb-item a {
     color: var(--hcdc-royal-blue);
     text-decoration: none;
     font-weight: 500;
+    font-family: var(--font-primary);
 }
 
 .breadcrumb-item a:hover {
-    color: #004a95;
+    color: var(--hcdc-royal-blue-dark);
     text-decoration: underline;
 }
 
 .breadcrumb-item.active {
-    color: #6c757d;
+    color: var(--hcdc-medium-gray);
+    font-family: var(--font-primary);
 }
 
-/* Header styling */
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 600;
-    color: var(--hcdc-dark);
-    margin-bottom: 1rem;
-}
-
-.h1, .h2, .h3, .h4, .h5, .h6 {
-    font-weight: 600;
-    color: var(--hcdc-dark);
-}
-
-/* Footer styling */
+/* ============================================
+   FOOTER
+   ============================================ */
 footer {
     margin-top: 3rem;
     background-color: var(--hcdc-maroon);
     color: var(--hcdc-white);
     padding: 1.5rem 0;
+    font-family: var(--font-primary);
 }
 
 footer small {
     font-size: 0.9rem;
+    opacity: 0.9;
 }
 
-/* Page header styling */
+/* ============================================
+   PAGE HEADER
+   ============================================ */
 .page-header {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
@@ -410,19 +505,29 @@ footer small {
 .page-header h1 {
     color: var(--hcdc-royal-blue);
     font-weight: 700;
+    margin-bottom: 0.5rem;
 }
 
-/* Card title styling */
-.card-title {
-    color: var(--hcdc-royal-blue);
-    font-weight: 600;
-    margin-bottom: 1rem;
+.page-header .subtitle {
+    color: var(--hcdc-medium-gray);
+    font-weight: 400;
 }
 
-/* Statistics cards */
+/* ============================================
+   STATISTICS CARDS
+   ============================================ */
 .stat-card {
     text-align: center;
     padding: 1.5rem;
+    background-color: var(--hcdc-white);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 90, 181, 0.08);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 90, 181, 0.12);
+    transform: translateY(-2px);
 }
 
 .stat-card .stat-value {
@@ -430,19 +535,25 @@ footer small {
     font-weight: 700;
     color: var(--hcdc-royal-blue);
     margin-bottom: 0.5rem;
+    font-family: var(--font-primary);
 }
 
 .stat-card .stat-label {
-    color: #6c757d;
+    color: var(--hcdc-medium-gray);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    font-family: var(--font-primary);
 }
 
-/* Progress bar styling */
+/* ============================================
+   PROGRESS BARS
+   ============================================ */
 .progress {
     border-radius: 10px;
     height: 20px;
+    background-color: var(--hcdc-light-gray);
 }
 
 .progress-bar {
@@ -455,35 +566,29 @@ footer small {
 }
 
 .progress-bar.bg-success {
-    background-color: var(--bs-success);
+    background-color: var(--hcdc-royal-blue);
 }
 
 .progress-bar.bg-danger {
-    background-color: var(--bs-danger);
+    background-color: var(--hcdc-maroon);
 }
 
-/* List group styling */
-.list-group-item {
-    border-left: 3px solid transparent;
-    transition: all 0.2s ease;
+.progress-bar.bg-warning {
+    background-color: var(--hcdc-maroon);
 }
 
-.list-group-item:hover {
-    border-left-color: var(--hcdc-royal-blue);
-    background-color: rgba(0, 90, 181, 0.05);
-}
-
-.list-group-item.active {
+.progress-bar.bg-info {
     background-color: var(--hcdc-royal-blue);
-    border-color: var(--hcdc-royal-blue);
-    color: var(--hcdc-white);
 }
 
-/* Modal styling */
+/* ============================================
+   MODALS
+   ============================================ */
 .modal-content {
     border-radius: 12px;
     border: none;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 90, 181, 0.2);
+    font-family: var(--font-primary);
 }
 
 .modal-header {
@@ -502,12 +607,34 @@ footer small {
 }
 
 .modal-footer {
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid var(--hcdc-light-gray);
     padding: 1rem 1.5rem;
     border-radius: 0 0 12px 12px;
 }
 
-/* Responsive adjustments */
+/* ============================================
+   LIST GROUPS
+   ============================================ */
+.list-group-item {
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+    font-family: var(--font-primary);
+}
+
+.list-group-item:hover {
+    border-left-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-royal-blue-light);
+}
+
+.list-group-item.active {
+    background-color: var(--hcdc-royal-blue);
+    border-color: var(--hcdc-royal-blue);
+    color: var(--hcdc-white);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
 @media (max-width: 768px) {
     .card {
         border-radius: 8px;
@@ -524,22 +651,28 @@ footer small {
     }
     
     .navbar-brand {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
     }
     
     .navbar-nav .nav-link {
         padding: 0.5rem 0.75rem;
         font-size: 0.9rem;
     }
+    
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.1rem; }
 }
 
-/* Custom scrollbar */
+/* ============================================
+   SCROLLBAR
+   ============================================ */
 ::-webkit-scrollbar {
     width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--hcdc-light-gray);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -548,10 +681,12 @@ footer small {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #004a95;
+    background: var(--hcdc-royal-blue-dark);
 }
 
-/* Animation */
+/* ============================================
+   ANIMATIONS
+   ============================================ */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -570,7 +705,9 @@ footer small {
     animation: slideIn 0.4s ease-out;
 }
 
-/* Loading spinner */
+/* ============================================
+   LOADING SPINNER
+   ============================================ */
 .loading {
     display: inline-block;
     width: 20px;
@@ -585,7 +722,9 @@ footer small {
     to { transform: rotate(360deg); }
 }
 
-/* File upload area */
+/* ============================================
+   FILE UPLOAD AREA
+   ============================================ */
 .border-dashed {
     border-style: dashed !important;
 }
@@ -593,15 +732,15 @@ footer small {
 .file-upload-area {
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 2px dashed #ced4da;
+    border: 2px dashed var(--hcdc-light-gray);
     border-radius: 12px;
     padding: 3rem;
     text-align: center;
-    background-color: rgba(0, 90, 181, 0.02);
+    background-color: var(--hcdc-white);
 }
 
 .file-upload-area:hover {
-    background-color: rgba(0, 90, 181, 0.05);
+    background-color: var(--hcdc-royal-blue-light);
     border-color: var(--hcdc-royal-blue);
 }
 
@@ -610,15 +749,17 @@ footer small {
     border-color: var(--hcdc-royal-blue);
 }
 
-/* Grade entry specific styles */
+/* ============================================
+   GRADE ENTRY SPECIFIC
+   ============================================ */
 .instance-card {
     margin-bottom: 1rem;
     border-left: 4px solid var(--hcdc-royal-blue);
 }
 
 .instance-card .card-header {
-    background-color: rgba(0, 90, 181, 0.1);
-    color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-royal-blue-light);
+    color: var(--hcdc-royal-blue-dark);
     font-weight: 600;
 }
 
@@ -626,47 +767,23 @@ footer small {
     max-width: 120px;
     text-align: center;
     font-weight: 600;
+    font-family: var(--font-primary);
 }
 
-/* Tooltip styling */
-.tooltip {
-    position: relative;
-    display: inline-block;
-}
-
-.tooltip .tooltiptext {
-    visibility: hidden;
-    background-color: var(--hcdc-dark);
-    color: var(--hcdc-white);
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 10px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -60px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 0.85rem;
-}
-
-.tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* Print styling */
+/* ============================================
+   PRINT STYLING
+   ============================================ */
 @media print {
     .navbar,
     .btn,
-    .no-print {
+    .no-print,
+    .footer {
         display: none !important;
     }
     
     .card {
         box-shadow: none;
-        border: 1px solid #ddd;
+        border: 1px solid var(--hcdc-light-gray);
     }
     
     .table {
@@ -678,3 +795,13 @@ footer small {
         page-break-after: auto;
     }
 }
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.text-hcdc-primary { color: var(--hcdc-royal-blue); }
+.text-hcdc-secondary { color: var(--hcdc-maroon); }
+.bg-hcdc-primary { background-color: var(--hcdc-royal-blue); }
+.bg-hcdc-secondary { background-color: var(--hcdc-maroon); }
+.border-hcdc-primary { border-color: var(--hcdc-royal-blue); }
+.border-hcdc-secondary { border-color: var(--hcdc-maroon); }

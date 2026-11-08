@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Class Record App{% endblock %}</title>
+    <title>{% block title %}HCDC Class Record{% endblock %}</title>
+    
+    <!-- Google Fonts - Inter (Professional, Clean) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
     {% block extra_css %}{% endblock %}
-    <style>
-        /* HCDC Theme Overrides */
-        .bg-hcdc-maroon { background-color: #800000; }
-        .text-hcdc-maroon { color: #800000; }
-        .bg-hcdc-royal-blue { background-color: #005AB5; }
-        .text-hcdc-royal-blue { color: #005AB5; }
-        .border-hcdc-royal-blue { border-color: #005AB5; }
-    </style>
 </head>
-<body>
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
@@ -62,11 +60,11 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="row justify-content-center">
-                    <div class="col-md-8">
+                    <div class="col-md-8 col-lg-6">
                         {% for category, message in messages %}
                             <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                                <i class="bi bi-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }}"></i>
-                                {{ message }}
+                                <i class="bi bi-{{ 'exclamation-triangle-fill' if category == 'error' else 'check-circle-fill' if category == 'success' else 'info-circle-fill' }}"></i>
+                                <strong>{{ category|title }}:</strong> {{ message }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         {% endfor %}
