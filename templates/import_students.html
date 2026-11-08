@@ -26,7 +26,7 @@
                         <select class="form-select" name="course_id" required>
                             <option value="" selected disabled>Select a course...</option>
                             {% for course in courses %}
-                            <option value="{{ course.id }}">
+                            <option value="{{ course.id }}" {% if course.id == selected_course_id %}selected{% endif %}>
                                 {{ course.course_title }} ({{ course.course_code }})
                             </option>
                             {% endfor %}

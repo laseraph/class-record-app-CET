@@ -758,8 +758,24 @@ def grading_criteria(course_id):
                          instances_by_component=instances_by_component)
 
 
+@app.route('/import-students', methods=['GET', 'POST'])
+def import_students():
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute('SELECT * FROM courses')
+    courses = cursor.fetchall()
+    
+    if request.method == 'POST':
+        course_id = request.form.get('course_id')
+        if course_id:
+            return redirect(url_for('add_students_to_course', course_id=course_id))
+    
+    return render_template('import_students.html', courses=courses)
+
+
 @app.route('/course/<int:course_id>/add-students', methods=['GET', 'POST'])
-def add_students(course_id):
+def add_students_to_course(course_id):
     db = get_db()
     cursor = db.cursor()
     
@@ -769,6 +785,9 @@ def add_students(course_id):
     if not course:
         flash('Course not found', 'error')
         return redirect(url_for('dashboard'))
+    
+    cursor.execute('SELECT * FROM courses')
+    all_courses = cursor.fetchall()
     
     if request.method == 'POST':
         file = request.files.get('file')
@@ -780,7 +799,7 @@ def add_students(course_id):
                     df = pd.read_excel(file)
                 else:
                     flash('Unsupported file format', 'error')
-                    return redirect(url_for('add_students', course_id=course_id))
+                    return redirect(url_for('add_students_to_course', course_id=course_id))
                 
                 imported = 0
                 for _, row in df.iterrows():
@@ -827,9 +846,9 @@ def add_students(course_id):
             except Exception as e:
                 db.rollback()
                 flash(f'Error importing file: {str(e)}', 'error')
-                return redirect(url_for('add_students', course_id=course_id))
+                return redirect(url_for('add_students_to_course', course_id=course_id))
     
-    return render_template('import_students.html', course=course)
+    return render_template('import_students.html', courses=all_courses, selected_course_id=course_id)
 
 
 @app.route('/course/add', methods=['GET', 'POST'])
