@@ -28,19 +28,19 @@
                     <div class="col-md-4">
                         <strong>Prelim-Mid:</strong> {{ "%.1f"|format(total_prelim) }}%
                         {% if total_prelim != 50 %}
-                        <span class="badge bg-danger ms-2">Should be 50%</span>
+                        <span class="badge bg-hcdc-secondary ms-2">Should be 50%</span>
                         {% endif %}
                     </div>
                     <div class="col-md-4">
                         <strong>Semis-Final:</strong> {{ "%.1f"|format(total_semis) }}%
                         {% if total_semis != 50 %}
-                        <span class="badge bg-danger ms-2">Should be 50%</span>
+                        <span class="badge bg-hcdc-secondary ms-2">Should be 50%</span>
                         {% endif %}
                     </div>
                     <div class="col-md-4">
                         <strong>Overall:</strong> {{ "%.1f"|format(total_overall) }}%
                         {% if total_overall != 100 %}
-                        <span class="badge bg-danger ms-2">Should be 100%</span>
+                        <span class="badge bg-hcdc-secondary ms-2">Should be 100%</span>
                         {% endif %}
                     </div>
                 </div>

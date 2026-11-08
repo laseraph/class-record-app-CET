@@ -12,7 +12,7 @@
     <!-- Summary Cards -->
     <div class="row mb-4">
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card text-white bg-primary">
+            <div class="card text-white bg-hcdc-primary">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-book fs-3 me-3"></i>
@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card text-white bg-success">
+            <div class="card text-white bg-hcdc-secondary">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-people fs-3 me-3"></i>
@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card text-white bg-info">
+            <div class="card text-white bg-hcdc-primary">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-graph-up fs-3 me-3"></i>
@@ -51,13 +51,13 @@
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card bg-warning">
+            <div class="card bg-hcdc-primary">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-file-earmark-spreadsheet fs-3 me-3"></i>
                         <div>
-                            <h5 class="card-title mb-0 text-dark">Export</h5>
-                            <p class="card-text fs-4 text-dark">XLSX/PDF</p>
+                            <h5 class="card-title mb-0 text-white">Export</h5>
+                            <p class="card-text fs-4 text-white">XLSX/PDF</p>
                         </div>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                             <td>{{ course.room }}</td>
                             <td>{{ course.student_count }}</td>
                             <td>
-                                <span class="badge bg-{% if course.pass_rate >= 75 %}success{% elif course.pass_rate >= 50 %}warning{% else %}danger{% endif %}">
+                                <span class="badge bg-{% if course.pass_rate >= 75 %}hcdc-primary{% elif course.pass_rate >= 50 %}hcdc-secondary{% else %}hcdc-secondary{% endif %}">
                                     {{ course.pass_rate }}%
                                 </span>
                             </td>
@@ -112,11 +112,11 @@
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <a href="{{ url_for('grade_entry', course_id=course.id) }}" 
-                                       class="btn btn-outline-success" title="Enter Grades">
+                                       class="btn btn-outline-primary" title="Enter Grades">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <a href="{{ url_for('grading_criteria', course_id=course.id) }}" 
-                                       class="btn btn-outline-info" title="Grading Criteria">
+                                       class="btn btn-outline-primary" title="Grading Criteria">
                                         <i class="bi bi-percent"></i>
                                     </a>
                                 </div>
@@ -143,19 +143,19 @@
                     </a>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="{{ url_for('import_students') }}" class="btn btn-success w-100 py-3">
+                    <a href="{{ url_for('import_students') }}" class="btn btn-secondary w-100 py-3">
                         <i class="bi bi-upload fs-4 d-block mb-2"></i>
                         Import Students
                     </a>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="{{ url_for('master_list') }}" class="btn btn-info w-100 py-3">
+                    <a href="{{ url_for('master_list') }}" class="btn btn-primary w-100 py-3">
                         <i class="bi bi-people fs-4 d-block mb-2"></i>
                         View Master List
                     </a>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="{{ url_for('export_all_xlsx') }}" class="btn btn-warning w-100 py-3">
+                    <a href="{{ url_for('export_all_xlsx') }}" class="btn btn-secondary w-100 py-3">
                         <i class="bi bi-file-earmark-excel fs-4 d-block mb-2"></i>
                         Export All (XLSX)
                     </a>

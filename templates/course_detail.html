@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}{{ course.course_title }} - Class Record App{% endblock %}
+{% block title %}{{ course.course_title }} - HCDC Class Record{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
@@ -13,28 +13,31 @@
     </nav>
 
     <!-- Course Header -->
-    <div class="card shadow-sm mb-4">
+    <div class="card mb-4">
         <div class="card-header bg-primary text-white">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h2 class="mb-0"><i class="bi bi-book"></i> {{ course.course_title }}</h2>
-                    <p class="mb-0 opacity-75">{{ course.course_code }}</p>
+                    <p class="mb-0 opacity-75">{{ course.course_code }} | {{ course.offering_number }}</p>
                 </div>
-                <div class="btn-group" role="group">
-                    <a href="{{ url_for('edit_course', course_id=course.id) }}" class="btn btn-light">
-                        <i class="bi bi-pencil"></i> Edit Course
+                <div class="btn-group" role="group" aria-label="Course Actions">
+                    <a href="{{ url_for('edit_course', course_id=course.id) }}" class="btn btn-outline-white" title="Edit Course">
+                        <i class="bi bi-pencil"></i> Edit
                     </a>
-                    <a href="{{ url_for('grade_entry', course_id=course.id) }}" class="btn btn-success">
-                        <i class="bi bi-pencil-square"></i> Enter Grades
+                    <a href="{{ url_for('grade_entry', course_id=course.id) }}" class="btn btn-outline-white" title="Enter Grades">
+                        <i class="bi bi-pencil-square"></i> Grades
                     </a>
-                    <a href="{{ url_for('grading_criteria', course_id=course.id) }}" class="btn btn-info">
-                        <i class="bi bi-percent"></i> Grading Criteria
+                    <a href="{{ url_for('grading_criteria', course_id=course.id) }}" class="btn btn-outline-white" title="Manage Grading Criteria">
+                        <i class="bi bi-percent"></i> Criteria
                     </a>
-                    <a href="{{ url_for('export_course_xlsx', course_id=course.id) }}" class="btn btn-warning">
-                        <i class="bi bi-file-earmark-excel"></i> Export XLSX
+                    <a href="{{ url_for('course_detail', course_id=course.id) }}/add-students" class="btn btn-outline-white" title="Add Students">
+                        <i class="bi bi-person-plus"></i> Students
                     </a>
-                    <a href="{{ url_for('export_course_pdf', course_id=course.id) }}" class="btn btn-danger">
-                        <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                    <a href="{{ url_for('export_course_xlsx', course_id=course.id) }}" class="btn btn-outline-white" title="Export to Excel">
+                        <i class="bi bi-file-earmark-excel"></i> XLSX
+                    </a>
+                    <a href="{{ url_for('export_course_pdf', course_id=course.id) }}" class="btn btn-outline-white" title="Export to PDF">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
                     </a>
                 </div>
             </div>
@@ -43,16 +46,31 @@
             <div class="row">
                 <div class="col-md-6">
                     <dl class="row mb-0">
-                        <dt class="col-sm-4">Schedule:</dt>
-                        <dd class="col-sm-8">{{ course.schedule }}</dd>
-                        <dt class="col-sm-4">Room:</dt>
+                        <dt class="col-sm-4 text-muted">Schedule:</dt>
+                        <dd class="col-sm-8">{{ course.schedule }} {{ course.days }}</dd>
+                        <dt class="col-sm-4 text-muted">Room:</dt>
                         <dd class="col-sm-8">{{ course.room }}</dd>
-                        <dt class="col-sm-4">Offering:</dt>
-                        <dd class="col-sm-8">{{ course.offering_number }}</dd>
+                        <dt class="col-sm-4 text-muted">Description:</dt>
+                        <dd class="col-sm-8">{{ course.description }}</dd>
                     </dl>
                 </div>
                 <div class="col-md-6">
-                    <p>{{ course.description }}</p>
+                    <div class="card h-100 border-0">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Quick Actions</h5>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('grading_criteria', course_id=course.id) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-plus-circle"></i> Add More Assignments/Quizzes
+                                </a>
+                                <a href="{{ url_for('grade_entry', course_id=course.id) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-pencil"></i> Enter Student Grades
+                                </a>
+                                <a href="#" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#addInstanceModal">
+                                    <i class="bi bi-plus"></i> Quick Add Instance
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,53 +79,184 @@
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card text-white bg-primary">
+            <div class="card stat-card">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-people fs-3 me-3"></i>
-                        <div>
-                            <h6 class="card-title mb-0">Total Students</h6>
-                            <p class="card-text fs-4">{{ total }}</p>
-                        </div>
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-people text-hcdc-primary" style="font-size: 2rem;"></i>
                     </div>
+                    <h3 class="stat-value">{{ total }}</h3>
+                    <p class="stat-label mb-0">Total Students</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card text-white bg-success">
+            <div class="card stat-card">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-check-circle fs-3 me-3"></i>
-                        <div>
-                            <h6 class="card-title mb-0">Passed</h6>
-                            <p class="card-text fs-4">{{ passed }} ({{ pass_rate }}%)</p>
-                        </div>
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-check-circle text-hcdc-primary" style="font-size: 2rem;"></i>
                     </div>
+                    <h3 class="stat-value">{{ passed }}</h3>
+                    <p class="stat-label mb-0">Passed ({{ pass_rate }}%)</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card text-white bg-danger">
+            <div class="card stat-card">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-x-circle fs-3 me-3"></i>
-                        <div>
-                            <h6 class="card-title mb-0">Failed</h6>
-                            <p class="card-text fs-4">{{ failed }} ({{ fail_rate }}%)</p>
-                        </div>
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-x-circle text-hcdc-secondary" style="font-size: 2rem;"></i>
                     </div>
+                    <h3 class="stat-value">{{ failed }}</h3>
+                    <p class="stat-label mb-0">Failed ({{ fail_rate }}%)</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card text-white bg-info">
+            <div class="card stat-card">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-graph-up fs-3 me-3"></i>
-                        <div>
-                            <h6 class="card-title mb-0">Class Average</h6>
-                            <p class="card-text fs-4">{{ avg }}</p>
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-graph-up text-hcdc-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <h3 class="stat-value">{{ "%.2f"|format(avg) }}</h3>
+                    <p class="stat-label mb-0">Class Average</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grading Components Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-list-task"></i> Grading Components</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-hcdc-primary mb-3">Prelim-Mid Period (50%)</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Component</th>
+                                            <th>Weight</th>
+                                            <th>Instances</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for comp in components if comp.prelim_mid_weight > 0 %}
+                                        <tr>
+                                            <td><strong>{{ comp.name }}</strong></td>
+                                            <td>{{ comp.prelim_mid_weight }}%</td>
+                                            <td>
+                                                {% set count = 0 %}
+                                                {% for inst in instances if inst.component_name == comp.name and inst.period == 'prelim_mid' %}
+                                                    {% set count = count + 1 %}
+                                                {% endfor %}
+                                                {{ count }}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+                        <div class="col-md-6">
+                            <h6 class="text-hcdc-primary mb-3">Semis-Final Period (50%)</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Component</th>
+                                            <th>Weight</th>
+                                            <th>Instances</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for comp in components if comp.semis_final_weight > 0 %}
+                                        <tr>
+                                            <td><strong>{{ comp.name }}</strong></td>
+                                            <td>{{ comp.semis_final_weight }}%</td>
+                                            <td>
+                                                {% set count = 0 %}
+                                                {% for inst in instances if inst.component_name == comp.name and inst.period == 'semis_final' %}
+                                                    {% set count = count + 1 %}
+                                                {% endfor %}
+                                                {{ count }}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <a href="{{ url_for('grading_criteria', course_id=course.id) }}" class="btn btn-secondary">
+                            <i class="bi bi-gear"></i> Manage Grading Criteria & Add More Instances
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Roster -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> Student Roster</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Last Name</th>
+                                    <th>First Name</th>
+                                    <th>ID Number</th>
+                                    <th>Prelim-Mid</th>
+                                    <th>Semis-Final</th>
+                                    <th>Final Grade</th>
+                                    <th>Letter</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in roster %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ item.student.last_name }}</td>
+                                    <td>{{ item.student.first_name }}</td>
+                                    <td>{{ item.student.id_number }}</td>
+                                    <td>{{ "%.2f"|format(item.grade.prelim_mid_total) if item.grade else '-' }}%</td>
+                                    <td>{{ "%.2f"|format(item.grade.semis_final_total) if item.grade else '-' }}%</td>
+                                    <td>{{ "%.2f"|format(item.grade.final_grade) if item.grade else '-' }}%</td>
+                                    <td>
+                                        {% if item.grade %}
+                                            <span class="badge bg-{{ 'hcdc-primary' if item.grade.remarks == 'Passed' else 'hcdc-secondary' }}">
+                                                {{ item.grade.letter_grade }}
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.grade %}
+                                            <span class="badge bg-{{ 'hcdc-primary' if item.grade.remarks == 'Passed' else 'hcdc-secondary' }}">
+                                                {{ item.grade.remarks }}
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -115,104 +264,97 @@
     </div>
 
     <!-- Grade Distribution -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Grade Distribution</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                {% for grade in ['A', 'B', 'C', 'D', 'E', 'F'] %}
-                <div class="col-md-2 col-4 mb-3">
-                    <div class="card h-100 text-center">
-                        <div class="card-body p-2">
-                            <h3 class="mb-0 text-{% if grade in ['A', 'B', 'C'] %}success{% elif grade == 'F' %}danger{% else %}warning{% endif %}">
-                                {{ grade }}
-                            </h3>
-                            <p class="mb-0">
-                                <strong>{{ dist[grade] }}</strong> students
-                            </p>
-                            <small class="text-muted">
-                                {{ "%.1f"|format(dist[grade] / total * 100 if total > 0 else 0) }}%
-                            </small>
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Grade Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        {% for grade, count in dist.items() %}
+                        <div class="col-6 col-md-2 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h3 class="text-primary">{{ grade }}</h3>
+                                    <p class="text-muted mb-0">{{ count }} students</p>
+                                    <div class="progress mt-2" style="height: 10px;">
+                                        <div class="progress-bar bg-primary" style="width: {{ (count/total*100)|int }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% endfor %}
             </div>
         </div>
-    </div>
-
-    <!-- Student Roster -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-people"></i> Student Roster</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Last Name</th>
-                            <th>First Name</th>
-                            <th>ID Number</th>
-                            <th>Final Grade</th>
-                            <th>Letter</th>
-                            <th>Remarks</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in roster %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ item.student.last_name }}</td>
-                            <td>{{ item.student.first_name }}</td>
-                            <td>{{ item.student.id_number }}</td>
-                            <td>
-                                {% if item.grade %}
-                                    <strong>{{ "%.2f"|format(item.grade.final_grade) }}</strong>
-                                {% else %}
-                                    <span class="text-muted">N/A</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if item.grade %}
-                                    <span class="badge bg-{% if item.grade.letter_grade in ['A', 'B', 'C'] %}success{% elif item.grade.letter_grade == 'F' %}danger{% else %}warning{% endif %}">
-                                        {{ item.grade.letter_grade }}
-                                    </span>
-                                {% else %}
-                                    <span class="text-muted">N/A</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if item.grade %}
-                                    <span class="badge bg-{% if item.grade.remarks == 'Passed' %}success{% else %}danger{% endif %}">
-                                        {{ item.grade.remarks }}
-                                    </span>
-                                {% else %}
-                                    <span class="text-muted">N/A</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a href="{{ url_for('grade_entry', course_id=course.id, student_id=item.student.id) }}" 
-                                   class="btn btn-sm btn-outline-primary" title="Enter Grades">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Back Button -->
-    <div class="mt-4">
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Dashboard
-        </a>
     </div>
 </div>
+
+<!-- Quick Add Instance Modal -->
+<div class="modal fade" id="addInstanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Quick Add Instance</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-4">
+                    Quickly add a new instance to any component. For full management, go to Grading Criteria.
+                </p>
+                <form method="POST" action="{{ url_for('grading_criteria', course_id=course.id) }}">
+                    <input type="hidden" name="action" value="add_instance">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Component</label>
+                            <select class="form-select" name="component_id" required>
+                                <option value="" selected disabled>Select a component...</option>
+                                {% for comp in components %}
+                                <option value="{{ comp.id }}">{{ comp.name }} ({{ comp.category }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Period</label>
+                            <select class="form-select" name="period" required>
+                                <option value="prelim_mid">Prelim-Mid</option>
+                                <option value="semis_final">Semis-Final</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Instance Number</label>
+                            <input type="number" class="form-control" name="instance_number" min="1" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" name="title" placeholder="e.g., Assignment 6" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Max Score</label>
+                            <input type="number" class="form-control" name="max_score" value="100" step="0.1" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Weight Fraction (0-1)</label>
+                            <input type="number" class="form-control" name="weight_fraction" value="0.2" step="0.01" min="0" max="1" required>
+                            <div class="form-text">Fraction of component weight (e.g., 0.2 = 20% of component)</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle"></i> Weight fractions for a component should sum to 1.0
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Instance</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

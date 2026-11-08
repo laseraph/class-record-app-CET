@@ -43,7 +43,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h4 class="mb-0">Current Grading Criteria</h4>
                 </div>
                 <div class="card-body">
@@ -95,7 +95,7 @@
                                         {{ comp_instances|length }} instances
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" 
+                                        <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" 
                                                 data-bs-target="#addInstanceModal-{{ comp.id }}">
                                             <i class="bi bi-plus"></i> Add Instance
                                         </button>
@@ -152,7 +152,7 @@
                                         <td>{{ inst.max_score }}</td>
                                         <td>{{ "%.4f"|format(inst.weight_fraction) }}</td>
                                         <td>
-                                            <span class="badge bg-{{ 'primary' if inst.period == 'prelim_mid' else 'success' }}">
+                                            <span class="badge bg-{{ 'hcdc-primary' if inst.period == 'prelim_mid' else 'hcdc-secondary' }}">
                                                 {{ inst.period|replace('_', ' ')|title }}
                                             </span>
                                         </td>
@@ -168,14 +168,14 @@
                                                 <input type="number" name="weight_fraction_{{ inst.id }}" 
                                                        value="{{ inst.weight_fraction }}" step="0.01" min="0" max="1"
                                                        class="form-control form-control-sm d-inline w-auto">
-                                                <button type="submit" class="btn btn-sm btn-info">
+                                                <button type="submit" class="btn btn-sm btn-primary">
                                                     <i class="bi bi-save"></i>
                                                 </button>
                                             </form>
                                             <form method="POST" class="d-inline">
                                                 <input type="hidden" name="action" value="delete_instance">
                                                 <input type="hidden" name="instance_id" value="{{ inst.id }}">
-                                                <button type="submit" class="btn btn-sm btn-danger" 
+                                                <button type="submit" class="btn btn-sm btn-secondary" 
                                                         onclick="return confirm('Are you sure?')">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -243,7 +243,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <form method="POST">
-                    <div class="modal-header bg-success text-white">
+                    <div class="modal-header bg-secondary text-white">
                         <h5 class="modal-title">Add Instance to {{ comp.name }}</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
@@ -277,7 +277,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success">Add Instance</button>
+                        <button type="submit" class="btn btn-secondary">Add Instance</button>
                     </div>
                 </form>
             </div>

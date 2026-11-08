@@ -1,21 +1,24 @@
 /* Custom styles for Class Record App - HCDC Professional Theme */
 /* HCDC Color Scheme: Maroon (#800000), Royal Blue (#005AB5), White (#FFFFFF) */
 /* Professional Font: Inter (clean, modern, professional) */
+/* Supports Light & Dark Mode */
 
 /* Import Professional Font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* CSS Variables for HCDC Theme */
+/* CSS Variables for HCDC Theme - Light Mode (Default) */
 :root {
     /* Primary Colors */
-    --hcdc-royal-blue: #005AB5;
-    --hcdc-royal-blue-light: #E6F0FA;
-    --hcdc-royal-blue-dark: #004A95;
+    --hcdc-primary: #005AB5;
+    --hcdc-primary-light: #E6F0FA;
+    --hcdc-primary-dark: #004A95;
+    --hcdc-primary-rgb: 0, 90, 181;
     
     /* Secondary Colors */
-    --hcdc-maroon: #800000;
-    --hcdc-maroon-light: #F5E6E8;
-    --hcdc-maroon-dark: #660000;
+    --hcdc-secondary: #800000;
+    --hcdc-secondary-light: #F5E6E8;
+    --hcdc-secondary-dark: #660000;
+    --hcdc-secondary-rgb: 128, 0, 0;
     
     /* Neutral Colors */
     --hcdc-white: #FFFFFF;
@@ -25,37 +28,95 @@
     --hcdc-dark-gray: #495057;
     --hcdc-black: #212529;
     
-    /* Semantic Colors (based on HCDC scheme) */
-    --hcdc-success: #005AB5;  /* Using royal blue for success */
-    --hcdc-warning: #800000;  /* Using maroon for warnings */
-    --hcdc-danger: #660000;   /* Darker maroon for errors */
-    --hcdc-info: #004A95;     /* Darker royal blue for info */
+    /* Background & Surface Colors */
+    --hcdc-bg-primary: #FFFFFF;
+    --hcdc-bg-secondary: #F8F9FA;
+    --hcdc-bg-tertiary: #E9ECEF;
+    --hcdc-surface: #FFFFFF;
+    
+    /* Text Colors */
+    --hcdc-text-primary: #212529;
+    --hcdc-text-secondary: #6C757D;
+    --hcdc-text-muted: #ADB5BD;
+    --hcdc-text-inverse: #FFFFFF;
+    
+    /* Border Colors */
+    --hcdc-border-light: #DEE2E6;
+    --hcdc-border-medium: #CED4DA;
+    --hcdc-border-dark: #ADB5BD;
+    
+    /* Shadow Colors */
+    --hcdc-shadow-sm: rgba(0, 0, 0, 0.05);
+    --hcdc-shadow: rgba(0, 0, 0, 0.07);
+    --hcdc-shadow-md: rgba(0, 0, 0, 0.1);
+    --hcdc-shadow-lg: rgba(0, 0, 0, 0.15);
     
     /* Font */
     --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    
+    /* Bootstrap Overrides */
+    --bs-body-bg: var(--hcdc-bg-secondary);
+    --bs-body-color: var(--hcdc-text-primary);
+    --bs-primary: var(--hcdc-primary);
+    --bs-primary-rgb: var(--hcdc-primary-rgb);
+    --bs-primary-bg-subtle: var(--hcdc-primary-light);
+    --bs-secondary: var(--hcdc-secondary);
+    --bs-secondary-rgb: var(--hcdc-secondary-rgb);
+    --bs-secondary-bg-subtle: var(--hcdc-secondary-light);
+    --bs-success: var(--hcdc-primary);
+    --bs-success-rgb: var(--hcdc-primary-rgb);
+    --bs-info: var(--hcdc-primary);
+    --bs-info-rgb: var(--hcdc-primary-rgb);
+    --bs-warning: var(--hcdc-secondary);
+    --bs-warning-rgb: var(--hcdc-secondary-rgb);
+    --bs-danger: var(--hcdc-secondary-dark);
+    --bs-danger-rgb: 102, 0, 0;
 }
 
-/* Override Bootstrap colors to match HCDC */
-:root {
-    --bs-primary: var(--hcdc-royal-blue);
-    --bs-primary-rgb: 0, 90, 181;
-    --bs-primary-bg-subtle: var(--hcdc-royal-blue-light);
-    
-    --bs-secondary: var(--hcdc-maroon);
-    --bs-secondary-rgb: 128, 0, 0;
-    --bs-secondary-bg-subtle: var(--hcdc-maroon-light);
-    
-    --bs-success: var(--hcdc-success);
-    --bs-success-rgb: 0, 90, 181;
-    
-    --bs-info: var(--hcdc-info);
-    --bs-info-rgb: 0, 74, 149;
-    
-    --bs-warning: var(--hcdc-warning);
-    --bs-warning-rgb: 128, 0, 0;
-    
-    --bs-danger: var(--hcdc-danger);
-    --bs-danger-rgb: 102, 0, 0;
+/* Dark Mode Variables */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Primary Colors - Slightly lighter for dark mode */
+        --hcdc-primary: #1A7FBF;
+        --hcdc-primary-light: #0F4A7F;
+        --hcdc-primary-dark: #0A3D6A;
+        
+        /* Secondary Colors - Slightly lighter for dark mode */
+        --hcdc-secondary: #A02020;
+        --hcdc-secondary-light: #5A1A1A;
+        --hcdc-secondary-dark: #800000;
+        
+        /* Neutral Colors */
+        --hcdc-white: #FFFFFF;
+        --hcdc-off-white: #1A1A2E;
+        --hcdc-light-gray: #16213E;
+        --hcdc-medium-gray: #8B98B5;
+        --hcdc-dark-gray: #C5C6C7;
+        --hcdc-black: #E0E0E0;
+        
+        /* Background & Surface Colors */
+        --hcdc-bg-primary: #0F172A;
+        --hcdc-bg-secondary: #1A1A2E;
+        --hcdc-bg-tertiary: #0D1117;
+        --hcdc-surface: #16213E;
+        
+        /* Text Colors */
+        --hcdc-text-primary: #E0E0E0;
+        --hcdc-text-secondary: #A0A0A0;
+        --hcdc-text-muted: #6C757D;
+        --hcdc-text-inverse: #1A1A2E;
+        
+        /* Border Colors */
+        --hcdc-border-light: #3D4465;
+        --hcdc-border-medium: #4A5568;
+        --hcdc-border-dark: #2D3748;
+        
+        /* Shadow Colors */
+        --hcdc-shadow-sm: rgba(0, 0, 0, 0.2);
+        --hcdc-shadow: rgba(0, 0, 0, 0.3);
+        --hcdc-shadow-md: rgba(0, 0, 0, 0.4);
+        --hcdc-shadow-lg: rgba(0, 0, 0, 0.5);
+    }
 }
 
 /* Base Typography */
@@ -63,8 +124,8 @@ body {
     font-family: var(--font-primary);
     font-weight: 400;
     line-height: 1.6;
-    color: var(--hcdc-black);
-    background-color: var(--hcdc-off-white);
+    color: var(--hcdc-text-primary);
+    background-color: var(--hcdc-bg-secondary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -74,7 +135,7 @@ h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
     font-family: var(--font-primary);
     font-weight: 600;
-    color: var(--hcdc-black);
+    color: var(--hcdc-text-primary);
     letter-spacing: -0.02em;
 }
 
@@ -87,8 +148,8 @@ h4 { font-size: 1.1rem; }
    NAVBAR
    ============================================ */
 .navbar {
-    background-color: var(--hcdc-royal-blue) !important;
-    box-shadow: 0 2px 10px rgba(0, 90, 181, 0.15);
+    background-color: var(--hcdc-primary) !important;
+    box-shadow: 0 2px 10px var(--hcdc-shadow-md);
     padding: 0.75rem 0;
     font-family: var(--font-primary);
 }
@@ -137,14 +198,15 @@ h4 { font-size: 1.1rem; }
 .card {
     border: none;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 90, 181, 0.08);
+    box-shadow: 0 2px 8px var(--hcdc-shadow);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     margin-bottom: 1.5rem;
     font-family: var(--font-primary);
+    background-color: var(--hcdc-surface);
 }
 
 .card:hover {
-    box-shadow: 0 4px 16px rgba(0, 90, 181, 0.12);
+    box-shadow: 0 4px 16px var(--hcdc-shadow-md);
     transform: translateY(-2px);
 }
 
@@ -157,19 +219,19 @@ h4 { font-size: 1.1rem; }
 }
 
 .card-header.bg-primary {
-    background-color: var(--hcdc-royal-blue) !important;
+    background-color: var(--hcdc-primary) !important;
     color: var(--hcdc-white) !important;
     border: none;
 }
 
 .card-header.bg-secondary {
-    background-color: var(--hcdc-maroon) !important;
+    background-color: var(--hcdc-secondary) !important;
     color: var(--hcdc-white) !important;
     border: none;
 }
 
 .card-header.bg-info {
-    background-color: var(--hcdc-info) !important;
+    background-color: var(--hcdc-primary-dark) !important;
     color: var(--hcdc-white) !important;
     border: none;
 }
@@ -186,12 +248,13 @@ h4 { font-size: 1.1rem; }
     border-radius: 8px;
     overflow: hidden;
     font-family: var(--font-primary);
+    background-color: var(--hcdc-surface);
 }
 
 .table th {
-    background-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
     color: var(--hcdc-white) !important;
-    border-bottom: 2px solid var(--hcdc-royal-blue);
+    border-bottom: 2px solid var(--hcdc-primary-dark);
     padding: 12px 15px;
     font-weight: 600;
     text-align: center;
@@ -205,6 +268,8 @@ h4 { font-size: 1.1rem; }
     text-align: center;
     font-family: var(--font-primary);
     font-weight: 400;
+    color: var(--hcdc-text-primary);
+    border-bottom: 1px solid var(--hcdc-border-light);
 }
 
 .table tbody tr {
@@ -212,20 +277,20 @@ h4 { font-size: 1.1rem; }
 }
 
 .table tbody tr:hover {
-    background-color: var(--hcdc-royal-blue-light);
+    background-color: var(--hcdc-primary-light);
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 90, 181, 0.02);
+    background-color: var(--hcdc-bg-tertiary);
 }
 
 .table-bordered {
-    border: 1px solid var(--hcdc-light-gray);
+    border: 1px solid var(--hcdc-border-light);
 }
 
 .table-bordered th,
 .table-bordered td {
-    border: 1px solid var(--hcdc-light-gray);
+    border: 1px solid var(--hcdc-border-light);
 }
 
 /* ============================================
@@ -237,14 +302,14 @@ h4 { font-size: 1.1rem; }
     font-weight: 500;
     transition: all 0.2s ease;
     border: none;
-    box-shadow: 0 2px 4px rgba(0, 90, 181, 0.15);
+    box-shadow: 0 2px 4px var(--hcdc-shadow);
     font-family: var(--font-primary);
     letter-spacing: -0.01em;
 }
 
 .btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 90, 181, 0.2);
+    box-shadow: 0 4px 12px var(--hcdc-shadow-md);
 }
 
 .btn:active {
@@ -252,56 +317,56 @@ h4 { font-size: 1.1rem; }
 }
 
 .btn:focus {
-    box-shadow: 0 0 0 0.25rem rgba(0, 90, 181, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--hcdc-primary-rgb), 0.25);
 }
 
 /* Primary Button - Royal Blue */
 .btn-primary {
-    background-color: var(--hcdc-royal-blue);
-    border-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
+    border-color: var(--hcdc-primary);
     color: var(--hcdc-white);
 }
 
 .btn-primary:hover {
-    background-color: var(--hcdc-royal-blue-dark);
-    border-color: var(--hcdc-royal-blue-dark);
+    background-color: var(--hcdc-primary-dark);
+    border-color: var(--hcdc-primary-dark);
     color: var(--hcdc-white);
 }
 
 /* Secondary Button - Maroon */
 .btn-secondary {
-    background-color: var(--hcdc-maroon);
-    border-color: var(--hcdc-maroon);
+    background-color: var(--hcdc-secondary);
+    border-color: var(--hcdc-secondary);
     color: var(--hcdc-white);
 }
 
 .btn-secondary:hover {
-    background-color: var(--hcdc-maroon-dark);
-    border-color: var(--hcdc-maroon-dark);
+    background-color: var(--hcdc-secondary-dark);
+    border-color: var(--hcdc-secondary-dark);
     color: var(--hcdc-white);
 }
 
 /* Outline Buttons */
 .btn-outline-primary {
-    color: var(--hcdc-royal-blue);
-    border-color: var(--hcdc-royal-blue);
+    color: var(--hcdc-primary);
+    border-color: var(--hcdc-primary);
 }
 
 .btn-outline-primary:hover {
-    background-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
     color: var(--hcdc-white);
-    border-color: var(--hcdc-royal-blue);
+    border-color: var(--hcdc-primary);
 }
 
 .btn-outline-secondary {
-    color: var(--hcdc-maroon);
-    border-color: var(--hcdc-maroon);
+    color: var(--hcdc-secondary);
+    border-color: var(--hcdc-secondary);
 }
 
 .btn-outline-secondary:hover {
-    background-color: var(--hcdc-maroon);
+    background-color: var(--hcdc-secondary);
     color: var(--hcdc-white);
-    border-color: var(--hcdc-maroon);
+    border-color: var(--hcdc-secondary);
 }
 
 /* Button Groups */
@@ -334,32 +399,32 @@ h4 { font-size: 1.1rem; }
 }
 
 .badge.bg-primary {
-    background-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
     color: var(--hcdc-white);
 }
 
 .badge.bg-secondary {
-    background-color: var(--hcdc-maroon);
+    background-color: var(--hcdc-secondary);
     color: var(--hcdc-white);
 }
 
 .badge.bg-success {
-    background-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
     color: var(--hcdc-white);
 }
 
 .badge.bg-danger {
-    background-color: var(--hcdc-maroon);
+    background-color: var(--hcdc-secondary);
     color: var(--hcdc-white);
 }
 
 .badge.bg-warning {
-    background-color: var(--hcdc-maroon-light);
-    color: var(--hcdc-maroon-dark);
+    background-color: var(--hcdc-secondary-light);
+    color: var(--hcdc-secondary-dark);
 }
 
 .badge.bg-info {
-    background-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
     color: var(--hcdc-white);
 }
 
@@ -371,38 +436,38 @@ h4 { font-size: 1.1rem; }
     border-radius: 8px;
     padding: 1rem 1.25rem;
     margin-bottom: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px var(--hcdc-shadow);
     font-family: var(--font-primary);
 }
 
 .alert-primary {
-    background-color: var(--hcdc-royal-blue-light);
-    color: var(--hcdc-royal-blue-dark);
-    border-left: 4px solid var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary-light);
+    color: var(--hcdc-primary-dark);
+    border-left: 4px solid var(--hcdc-primary);
 }
 
 .alert-success {
-    background-color: var(--hcdc-royal-blue-light);
-    color: var(--hcdc-royal-blue-dark);
-    border-left: 4px solid var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary-light);
+    color: var(--hcdc-primary-dark);
+    border-left: 4px solid var(--hcdc-primary);
 }
 
 .alert-danger {
-    background-color: var(--hcdc-maroon-light);
-    color: var(--hcdc-maroon-dark);
-    border-left: 4px solid var(--hcdc-maroon);
+    background-color: var(--hcdc-secondary-light);
+    color: var(--hcdc-secondary-dark);
+    border-left: 4px solid var(--hcdc-secondary);
 }
 
 .alert-warning {
-    background-color: var(--hcdc-maroon-light);
-    color: var(--hcdc-maroon-dark);
-    border-left: 4px solid var(--hcdc-maroon);
+    background-color: var(--hcdc-secondary-light);
+    color: var(--hcdc-secondary-dark);
+    border-left: 4px solid var(--hcdc-secondary);
 }
 
 .alert-info {
-    background-color: var(--hcdc-royal-blue-light);
-    color: var(--hcdc-royal-blue-dark);
-    border-left: 4px solid var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary-light);
+    color: var(--hcdc-primary-dark);
+    border-left: 4px solid var(--hcdc-primary);
 }
 
 /* ============================================
@@ -411,37 +476,39 @@ h4 { font-size: 1.1rem; }
 .form-control, .form-select {
     border-radius: 8px;
     padding: 10px 15px;
-    border: 2px solid var(--hcdc-light-gray);
+    border: 2px solid var(--hcdc-border-medium);
     transition: all 0.2s ease;
     height: calc(1.5em + 0.75rem + 2px);
     font-family: var(--font-primary);
     font-weight: 400;
+    color: var(--hcdc-text-primary);
+    background-color: var(--hcdc-surface);
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: var(--hcdc-royal-blue);
-    box-shadow: 0 0 0 0.25rem rgba(0, 90, 181, 0.25);
+    border-color: var(--hcdc-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--hcdc-primary-rgb), 0.25);
     outline: none;
 }
 
 .form-control:hover:not(:focus) {
-    border-color: var(--hcdc-medium-gray);
+    border-color: var(--hcdc-border-light);
 }
 
 .form-label {
     font-weight: 500;
-    color: var(--hcdc-black);
+    color: var(--hcdc-text-primary);
     margin-bottom: 0.5rem;
     font-family: var(--font-primary);
 }
 
 .form-check-input:checked {
-    background-color: var(--hcdc-royal-blue);
-    border-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
+    border-color: var(--hcdc-primary);
 }
 
 .form-check-input:focus {
-    box-shadow: 0 0 0 0.25rem rgba(0, 90, 181, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--hcdc-primary-rgb), 0.25);
 }
 
 /* ============================================
@@ -455,25 +522,25 @@ h4 { font-size: 1.1rem; }
 }
 
 .breadcrumb-item + .breadcrumb-item::before {
-    color: var(--hcdc-medium-gray);
+    color: var(--hcdc-text-muted);
     content: ">";
     font-family: var(--font-primary);
 }
 
 .breadcrumb-item a {
-    color: var(--hcdc-royal-blue);
+    color: var(--hcdc-primary);
     text-decoration: none;
     font-weight: 500;
     font-family: var(--font-primary);
 }
 
 .breadcrumb-item a:hover {
-    color: var(--hcdc-royal-blue-dark);
+    color: var(--hcdc-primary-dark);
     text-decoration: underline;
 }
 
 .breadcrumb-item.active {
-    color: var(--hcdc-medium-gray);
+    color: var(--hcdc-text-muted);
     font-family: var(--font-primary);
 }
 
@@ -482,7 +549,7 @@ h4 { font-size: 1.1rem; }
    ============================================ */
 footer {
     margin-top: 3rem;
-    background-color: var(--hcdc-maroon);
+    background-color: var(--hcdc-secondary);
     color: var(--hcdc-white);
     padding: 1.5rem 0;
     font-family: var(--font-primary);
@@ -499,17 +566,17 @@ footer small {
 .page-header {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 3px solid var(--hcdc-royal-blue);
+    border-bottom: 3px solid var(--hcdc-primary);
 }
 
 .page-header h1 {
-    color: var(--hcdc-royal-blue);
+    color: var(--hcdc-primary);
     font-weight: 700;
     margin-bottom: 0.5rem;
 }
 
 .page-header .subtitle {
-    color: var(--hcdc-medium-gray);
+    color: var(--hcdc-text-secondary);
     font-weight: 400;
 }
 
@@ -519,27 +586,27 @@ footer small {
 .stat-card {
     text-align: center;
     padding: 1.5rem;
-    background-color: var(--hcdc-white);
+    background-color: var(--hcdc-surface);
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 90, 181, 0.08);
+    box-shadow: 0 2px 8px var(--hcdc-shadow);
     transition: all 0.3s ease;
 }
 
 .stat-card:hover {
-    box-shadow: 0 4px 16px rgba(0, 90, 181, 0.12);
+    box-shadow: 0 4px 16px var(--hcdc-shadow-md);
     transform: translateY(-2px);
 }
 
 .stat-card .stat-value {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--hcdc-royal-blue);
+    color: var(--hcdc-primary);
     margin-bottom: 0.5rem;
     font-family: var(--font-primary);
 }
 
 .stat-card .stat-label {
-    color: var(--hcdc-medium-gray);
+    color: var(--hcdc-text-muted);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -553,7 +620,7 @@ footer small {
 .progress {
     border-radius: 10px;
     height: 20px;
-    background-color: var(--hcdc-light-gray);
+    background-color: var(--hcdc-bg-tertiary);
 }
 
 .progress-bar {
@@ -562,23 +629,23 @@ footer small {
 }
 
 .progress-bar.bg-primary {
-    background-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
 }
 
 .progress-bar.bg-success {
-    background-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
 }
 
 .progress-bar.bg-danger {
-    background-color: var(--hcdc-maroon);
+    background-color: var(--hcdc-secondary);
 }
 
 .progress-bar.bg-warning {
-    background-color: var(--hcdc-maroon);
+    background-color: var(--hcdc-secondary);
 }
 
 .progress-bar.bg-info {
-    background-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
 }
 
 /* ============================================
@@ -587,12 +654,13 @@ footer small {
 .modal-content {
     border-radius: 12px;
     border: none;
-    box-shadow: 0 10px 30px rgba(0, 90, 181, 0.2);
+    box-shadow: 0 10px 30px var(--hcdc-shadow-lg);
     font-family: var(--font-primary);
+    background-color: var(--hcdc-surface);
 }
 
 .modal-header {
-    background-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
     color: var(--hcdc-white);
     border-radius: 12px 12px 0 0;
     padding: 1rem 1.5rem;
@@ -604,10 +672,11 @@ footer small {
 
 .modal-body {
     padding: 1.5rem;
+    color: var(--hcdc-text-primary);
 }
 
 .modal-footer {
-    border-top: 1px solid var(--hcdc-light-gray);
+    border-top: 1px solid var(--hcdc-border-light);
     padding: 1rem 1.5rem;
     border-radius: 0 0 12px 12px;
 }
@@ -619,16 +688,18 @@ footer small {
     border-left: 3px solid transparent;
     transition: all 0.2s ease;
     font-family: var(--font-primary);
+    color: var(--hcdc-text-primary);
+    background-color: var(--hcdc-surface);
 }
 
 .list-group-item:hover {
-    border-left-color: var(--hcdc-royal-blue);
-    background-color: var(--hcdc-royal-blue-light);
+    border-left-color: var(--hcdc-primary);
+    background-color: var(--hcdc-primary-light);
 }
 
 .list-group-item.active {
-    background-color: var(--hcdc-royal-blue);
-    border-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary);
+    border-color: var(--hcdc-primary);
     color: var(--hcdc-white);
 }
 
@@ -672,16 +743,16 @@ footer small {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--hcdc-light-gray);
+    background: var(--hcdc-bg-tertiary);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--hcdc-royal-blue);
+    background: var(--hcdc-primary);
     border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--hcdc-royal-blue-dark);
+    background: var(--hcdc-primary-dark);
 }
 
 /* ============================================
@@ -732,21 +803,21 @@ footer small {
 .file-upload-area {
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 2px dashed var(--hcdc-light-gray);
+    border: 2px dashed var(--hcdc-border-medium);
     border-radius: 12px;
     padding: 3rem;
     text-align: center;
-    background-color: var(--hcdc-white);
+    background-color: var(--hcdc-surface);
 }
 
 .file-upload-area:hover {
-    background-color: var(--hcdc-royal-blue-light);
-    border-color: var(--hcdc-royal-blue);
+    background-color: var(--hcdc-primary-light);
+    border-color: var(--hcdc-primary);
 }
 
 .file-upload-area.dragover {
-    background-color: rgba(0, 90, 181, 0.1);
-    border-color: var(--hcdc-royal-blue);
+    background-color: rgba(var(--hcdc-primary-rgb), 0.1);
+    border-color: var(--hcdc-primary);
 }
 
 /* ============================================
@@ -754,12 +825,12 @@ footer small {
    ============================================ */
 .instance-card {
     margin-bottom: 1rem;
-    border-left: 4px solid var(--hcdc-royal-blue);
+    border-left: 4px solid var(--hcdc-primary);
 }
 
 .instance-card .card-header {
-    background-color: var(--hcdc-royal-blue-light);
-    color: var(--hcdc-royal-blue-dark);
+    background-color: var(--hcdc-primary-light);
+    color: var(--hcdc-primary-dark);
     font-weight: 600;
 }
 
@@ -783,7 +854,7 @@ footer small {
     
     .card {
         box-shadow: none;
-        border: 1px solid var(--hcdc-light-gray);
+        border: 1px solid var(--hcdc-border-light);
     }
     
     .table {
@@ -799,9 +870,30 @@ footer small {
 /* ============================================
    UTILITY CLASSES
    ============================================ */
-.text-hcdc-primary { color: var(--hcdc-royal-blue); }
-.text-hcdc-secondary { color: var(--hcdc-maroon); }
-.bg-hcdc-primary { background-color: var(--hcdc-royal-blue); }
-.bg-hcdc-secondary { background-color: var(--hcdc-maroon); }
-.border-hcdc-primary { border-color: var(--hcdc-royal-blue); }
-.border-hcdc-secondary { border-color: var(--hcdc-maroon); }
+.text-hcdc-primary { color: var(--hcdc-primary); }
+.text-hcdc-secondary { color: var(--hcdc-secondary); }
+.bg-hcdc-primary { background-color: var(--hcdc-primary); }
+.bg-hcdc-secondary { background-color: var(--hcdc-secondary); }
+.border-hcdc-primary { border-color: var(--hcdc-primary); }
+.border-hcdc-secondary { border-color: var(--hcdc-secondary); }
+
+/* ============================================
+   DARK MODE TOGGLE SWITCH
+   ============================================ */
+.dark-mode-toggle {
+    cursor: pointer;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--hcdc-white);
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.dark-mode-toggle:hover {
+    transform: rotate(15deg);
+}
+
+.dark-mode-toggle:active {
+    transform: rotate(0deg) scale(0.95);
+}
