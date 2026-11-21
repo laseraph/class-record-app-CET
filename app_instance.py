@@ -1056,6 +1056,128 @@ def add_course():
     return render_template('add_course.html')
 
 
+@app.route('/course/<int:course_id>/grades/import', methods=['GET', 'POST'])
+def import_course_grades(course_id):
+    """
+    Import grades for a specific course from Excel file
+    """
+    db = get_db()
+    cursor = db.cursor()
+    
+    # Verify course exists
+    cursor.execute('SELECT * FROM courses WHERE id = ?', (course_id,))
+    course = cursor.fetchone()
+    
+    if not course:
+        flash('Course not found', 'error')
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        file = request.files.get('file')
+        
+        if not file or not file.filename:
+            flash('Please select a file to import', 'error')
+            return redirect(url_for('import_course_grades', course_id=course_id))
+        
+        try:
+            # Check file extension
+            if not file.filename.endswith(('.xlsx', '.xls', '.csv')):
+                flash('Please upload an Excel or CSV file', 'error')
+                return redirect(url_for('import_course_grades', course_id=course_id))
+            
+            if file.filename.endswith('.csv'):
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+            
+            # Try to find student ID column
+            id_col = None
+            for col in df.columns:
+                col_name = str(col).strip().lower()
+                if 'id' in col_name or 'number' in col_name:
+                    id_col = col
+                    break
+            
+            if not id_col:
+                flash('Could not find ID Number column in the file', 'error')
+                return redirect(url_for('import_course_grades', course_id=course_id))
+            
+            # Get all instances for this course
+            cursor.execute('''
+                SELECT ci.id, ci.title, ci.max_score, gc.name as component_name
+                FROM component_instances ci
+                JOIN grading_components gc ON ci.component_id = gc.id
+                WHERE ci.course_id = ?
+                ORDER BY ci.period, gc.name, ci.instance_number
+            ''', (course_id,))
+            instances = cursor.fetchall()
+            
+            if not instances:
+                flash('No grading components found for this course. Please add components first.', 'error')
+                return redirect(url_for('import_course_grades', course_id=course_id))
+            
+            imported_count = 0
+            
+            # Try to match columns to instances
+            for _, row in df.iterrows():
+                id_number = str(row[id_col]).strip()
+                
+                # Find student
+                cursor.execute('SELECT id FROM students WHERE id_number = ?', (id_number,))
+                student = cursor.fetchone()
+                
+                if not student:
+                    continue
+                
+                student_id = student['id']
+                
+                # Check if student is enrolled
+                cursor.execute('SELECT id FROM course_students WHERE course_id = ? AND student_id = ?',
+                              (course_id, student_id))
+                if not cursor.fetchone():
+                    # Add student to course
+                    cursor.execute('INSERT INTO course_students (course_id, student_id) VALUES (?, ?)',
+                                  (course_id, student_id))
+                    db.commit()
+                
+                # Import scores for each instance
+                for inst in instances:
+                    instance_id = inst['id']
+                    title = inst['title']
+                    
+                    # Try to find matching column
+                    for col in df.columns:
+                        col_name = str(col).strip().lower()
+                        title_lower = title.strip().lower()
+                        
+                        if title_lower in col_name or col_name in title_lower:
+                            score = row.get(col)
+                            if pd.notna(score):
+                                try:
+                                    score = float(score)
+                                    cursor.execute('''
+                                        INSERT OR REPLACE INTO scores (course_id, student_id, instance_id, score)
+                                        VALUES (?, ?, ?, ?)
+                                    ''', (course_id, student_id, instance_id, score))
+                                    imported_count += 1
+                                except:
+                                    pass
+                            break
+            
+            db.commit()
+            recalculate_all_grades(course_id)
+            
+            flash(f'Successfully imported {imported_count} scores for {course["course_code"]}!', 'success')
+            return redirect(url_for('course_detail', course_id=course_id))
+            
+        except Exception as e:
+            db.rollback()
+            flash(f'Error importing file: {str(e)}', 'error')
+            return redirect(url_for('import_course_grades', course_id=course_id))
+    
+    return render_template('import_course_grades.html', course=course)
+
+
 @app.route('/course/<int:course_id>/add-student', methods=['GET', 'POST'])
 def add_student(course_id):
     db = get_db()

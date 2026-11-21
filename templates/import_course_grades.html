@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Import Grades - {{ course.course_code }} - HCDC Class Record{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 16px;">
+    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="course-btn" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="bi bi-arrow-left"></i> Back to {{ course.course_code }}
+    </a>
+</div>
+
+<div class="card">
+    <div class="section-header">
+        <h1 style="margin: 0;">Import Grades for {{ course.course_title }}</h1>
+    </div>
+    
+    <p class="subtitle" style="margin-bottom: 20px;">
+        Upload an Excel or CSV file containing grades for this course.
+    </p>
+    
+    <div class="notice info" style="margin-bottom: 20px;">
+        <p><strong><i class="bi bi-info-circle"></i> File Format:</strong></p>
+        <ul style="margin: 10px 0; padding-left: 20px; font-size: 13px;">
+            <li><strong>Required column:</strong> ID Number (to match students)</li>
+            <li><strong>Grade columns:</strong> Should match your assessment instance names (e.g., "Assignment 1", "Quiz 1", "Prelim Exam")</li>
+            <li>Supported formats: Excel (.xlsx, .xls) or CSV (.csv)</li>
+        </ul>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="notice {% if category == 'error' %}error{% elif category == 'success' %}success{% else %}info{% endif %}">
+                    <p>{{ message }}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST" enctype="multipart/form-data" style="margin-top: 20px;">
+        <div class="form-group">
+            <label for="file">Select File <span style="color: var(--hcdc-secondary);">*</span></label>
+            <input type="file" id="file" name="file" accept=".xlsx,.xls,.csv" required>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+                Choose your grade sheet file for {{ course.course_code }}
+            </div>
+        </div>
+        
+        <div class="actions" style="margin-top: 24px;">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-upload"></i> Import Grades
+            </button>
+            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">
+                <i class="bi bi-x"></i> Cancel
+            </a>
+        </div>
+    </form>
+    
+    <!-- Show existing instances for reference -->
+    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+        <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600;">
+            Current Assessment Instances (column names to match):
+        </h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            {% set prelim_instances = [] %}
+            {% set semis_instances = [] %}
+            {% for comp in components %}
+                {% for inst in instances_by_component.get(comp.name, []) %}
+                    {% if inst.period == 'prelim_mid' %}
+                        {% do prelim_instances.append(inst.title) %}
+                    {% else %}
+                        {% do semis_instances.append(inst.title) %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            
+            {% for title in prelim_instances %}
+                <span class="pill pass" style="font-size: 11px; padding: 4px 8px;">{{ title }}</span>
+            {% endfor %}
+            {% for title in semis_instances %}
+                <span class="pill info" style="font-size: 11px; padding: 4px 8px;">{{ title }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -66,6 +66,9 @@
         <a href="{{ url_for('add_student', course_id=course.id) }}" class="btn btn-primary">
             <i class="bi bi-person-plus"></i> Add Student
         </a>
+        <a href="{{ url_for('import_course_grades', course_id=course.id) }}" class="btn btn-secondary">
+            <i class="bi bi-file-earmark-excel"></i> Import Grades
+        </a>
         <a href="{{ url_for('import_students') }}" class="btn btn-secondary">
             <i class="bi bi-upload"></i> Import Students
         </a>
