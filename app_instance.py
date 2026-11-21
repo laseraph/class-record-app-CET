@@ -500,7 +500,9 @@ def course_detail(course_id):
     failed = sum(1 for r in roster if r['grade'] and r['grade']['remarks'] == 'Failed')
     pass_rate = (passed / total * 100) if total > 0 else 0
     fail_rate = (failed / total * 100) if total > 0 else 0
-    avg = sum(r['grade']['final_grade'] for r in roster if r['grade']) / total if total > 0 else 0
+    # Filter out None and NaN values for average calculation
+    grades = [r['grade']['final_grade'] for r in roster if r['grade'] and r['grade']['final_grade'] is not None]
+    avg = sum(grades) / len(grades) if grades else 0
     
     dist = {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0, 'F': 0}
     for r in roster:
@@ -2085,11 +2087,14 @@ def import_grades():
                             email = ''
                             
                             if 'last_name' in student_cols:
-                                last_name = str(row[student_cols['last_name']]).strip()
+                                val = row[student_cols['last_name']]
+                                last_name = str(val).strip() if pd.notna(val) else ''
                             if 'first_name' in student_cols:
-                                first_name = str(row[student_cols['first_name']]).strip()
+                                val = row[student_cols['first_name']]
+                                first_name = str(val).strip() if pd.notna(val) else ''
                             elif 'full_name' in student_cols:
-                                full_name = str(row[student_cols['full_name']]).strip()
+                                val = row[student_cols['full_name']]
+                                full_name = str(val).strip() if pd.notna(val) else ''
                                 if full_name:
                                     parts = full_name.split(',')
                                     if len(parts) == 2:
@@ -2099,9 +2104,11 @@ def import_grades():
                                         last_name = full_name
                             
                             if 'id_number' in student_cols:
-                                id_number = str(row[student_cols['id_number']]).strip()
+                                val = row[student_cols['id_number']]
+                                id_number = str(val).strip() if pd.notna(val) else ''
                             if 'email' in student_cols:
-                                email = str(row[student_cols['email']]).strip()
+                                val = row[student_cols['email']]
+                                email = str(val).strip() if pd.notna(val) else ''
                             
                             if not last_name and not first_name:
                                 continue
@@ -2196,7 +2203,7 @@ def import_grades():
                                 if student:
                                     student_id = student['id']
                                     score = row.get(grade_col)
-                                    if pd.notna(score):
+                                    if pd.notna(score) and score != '' and str(score).strip() != 'nan':
                                         try:
                                             score = float(score)
                                             cursor.execute('''

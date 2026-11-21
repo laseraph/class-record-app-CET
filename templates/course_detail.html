@@ -54,7 +54,7 @@
                 Class Average
             </div>
             <div style="font-size: 16px; font-weight: 700; color: var(--hcdc-primary); margin-top: 4px;">
-                {{ "%.2f"|format(avg) }}%
+                {{ "%.2f"|format(avg) if avg is not none else 0 }}%
             </div>
         </div>
     </div>
@@ -170,9 +170,9 @@
                     <td>{{ loop.index }}</td>
                     <td><strong>{{ item.student.last_name }}, {{ item.student.first_name }}</strong></td>
                     <td>{{ item.student.id_number }}</td>
-                    <td>{{ "%.2f"|format(item.grade.prelim_mid_total) if item.grade else '-' }}%</td>
-                    <td>{{ "%.2f"|format(item.grade.semis_final_total) if item.grade else '-' }}%</td>
-                    <td>{{ "%.2f"|format(item.grade.final_grade) if item.grade else '-' }}%</td>
+                    <td>{{ "%.2f"|format(item.grade.prelim_mid_total) if item.grade and item.grade.prelim_mid_total is not none else '-' }}%</td>
+                    <td>{{ "%.2f"|format(item.grade.semis_final_total) if item.grade and item.grade.semis_final_total is not none else '-' }}%</td>
+                    <td>{{ "%.2f"|format(item.grade.final_grade) if item.grade and item.grade.final_grade is not none else '-' }}%</td>
                     <td>
                         {% if item.grade %}
                             <span class="pill {% if item.grade.remarks == 'Passed' %}pass{% else %}fail{% endif %}">
@@ -199,7 +199,7 @@
             <i class="bi bi-people"></i> {{ total }} Total
         </span>
         <span style="margin-left: auto; font-size: 12px; color: var(--muted);">
-            Average: <strong>{{ "%.2f"|format(avg) }}%</strong>
+            Average: <strong>{{ "%.2f"|format(avg) if avg is not none else 0 }}%</strong>
         </span>
     </div>
 </div>
