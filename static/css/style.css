@@ -226,11 +226,15 @@ html.dark-mode {
     --surface: #0f172a;
     --hcdc-primary: #3b82f6;
     --hcdc-primary-dark: #2563eb;
+    --hcdc-primary-light: #1e3a8a;
     --hcdc-secondary: #ef4444;
+    --ok: #10b981;
     --ok-bg: #064e3b;
     --ok-border: #10b981;
+    --bad: #fca5a5;
     --bad-bg: #7f1d1d;
     --bad-border: #ef4444;
+    --warn: #fbbf24;
     --warn-bg: #78350f;
     --warn-border: #f59e0b;
 }
