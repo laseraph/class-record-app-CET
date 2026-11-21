@@ -2022,17 +2022,17 @@ def import_grades():
                                             imported_grades += 1
                                         except:
                                             pass
-                    
+                
                 # Recalculate grades for this course
                 recalculate_all_grades(course_id)
-                
+            
             flash(f'Import complete! {imported_courses} courses, {imported_students} students, {imported_grades} grades imported.', 'success')
-                return redirect(url_for('dashboard'))
-                
-            except Exception as e:
-                db.rollback()
-                flash(f'Error importing file: {str(e)}', 'error')
-                return redirect(url_for('import_grades'))
+            return redirect(url_for('dashboard'))
+            
+        except Exception as e:
+            db.rollback()
+            flash(f'Error importing file: {str(e)}', 'error')
+            return redirect(url_for('import_grades'))
         else:
             flash('No file selected', 'error')
             return redirect(url_for('import_grades'))
