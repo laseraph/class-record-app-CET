@@ -193,10 +193,13 @@ h1 {
         --hcdc-primary: #3b82f6;
         --hcdc-primary-dark: #2563eb;
         --hcdc-secondary: #ef4444;
+        --ok: #10b981;
         --ok-bg: #064e3b;
         --ok-border: #10b981;
+        --bad: #fca5a5;
         --bad-bg: #7f1d1d;
         --bad-border: #ef4444;
+        --warn: #fbbf24;
         --warn-bg: #78350f;
         --warn-border: #f59e0b;
     }
@@ -302,6 +305,23 @@ html.dark-mode h6 {
     color: var(--hcdc-primary);
     background: var(--hcdc-primary-light);
     border-color: var(--hcdc-primary);
+}
+
+/* Dark mode notice styles - ensure visibility */
+html.dark-mode .notice {
+    color: var(--ink);
+}
+
+html.dark-mode .notice.success {
+    color: var(--ok);
+}
+
+html.dark-mode .notice.error {
+    color: var(--bad);
+}
+
+html.dark-mode .notice.info {
+    color: var(--hcdc-primary);
 }
 
 /* Form Styles */
