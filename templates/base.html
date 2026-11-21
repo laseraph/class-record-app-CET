@@ -74,19 +74,20 @@
             localStorage.setItem('darkMode', isDark);
             
             // Update icon
+            updateDarkModeIcon();
+        }
+        
+        function updateDarkModeIcon() {
             const icon = document.getElementById('darkModeIcon');
             if (icon) {
+                const isDark = document.documentElement.classList.contains('dark-mode');
                 icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
             }
         }
         
         // Initialize dark mode icon
         document.addEventListener('DOMContentLoaded', function() {
-            const icon = document.getElementById('darkModeIcon');
-            if (icon) {
-                const isDark = document.documentElement.classList.contains('dark-mode');
-                icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
-            }
+            updateDarkModeIcon();
         });
     </script>
     

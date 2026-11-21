@@ -123,9 +123,10 @@ h1 {
     justify-content: space-between;
     align-items: center;
     padding: 16px 24px;
-    background: transparent;
+    background: var(--card);
     position: relative;
     z-index: 1000;
+    border-bottom: 1px solid var(--border);
 }
 
 .navbar .brand {
@@ -245,6 +246,11 @@ html.dark-mode body {
 html.dark-mode .card {
     background: var(--card);
     border-color: var(--border);
+}
+
+html.dark-mode .navbar {
+    background: var(--card);
+    border-bottom-color: var(--border);
 }
 
 html.dark-mode h1,

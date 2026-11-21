@@ -1018,6 +1018,65 @@ def add_course():
     return render_template('add_course.html')
 
 
+@app.route('/course/<int:course_id>/add-student', methods=['GET', 'POST'])
+def add_student(course_id):
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute('SELECT * FROM courses WHERE id = ?', (course_id,))
+    course = cursor.fetchone()
+    
+    if not course:
+        flash('Course not found', 'error')
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        last_name = request.form.get('last_name', '').strip()
+        first_name = request.form.get('first_name', '').strip()
+        id_number = request.form.get('id_number', '').strip()
+        email = request.form.get('email', '').strip()
+        
+        if not last_name or not first_name:
+            flash('Last Name and First Name are required', 'error')
+            return redirect(url_for('add_student', course_id=course_id))
+        
+        try:
+            cursor.execute('SELECT id FROM students WHERE id_number = ?', (id_number,))
+            existing_student = cursor.fetchone()
+            
+            if existing_student:
+                student_id = existing_student['id']
+                cursor.execute('''
+                    UPDATE students 
+                    SET last_name = ?, first_name = ?, email = ?
+                    WHERE id = ?
+                ''', (last_name, first_name, email, student_id))
+                flash('Student updated and added to course!', 'success')
+            else:
+                cursor.execute('''
+                    INSERT INTO students (last_name, first_name, id_number, email)
+                    VALUES (?, ?, ?, ?)
+                ''', (last_name, first_name, id_number, email))
+                student_id = cursor.lastrowid
+                flash('Student added successfully!', 'success')
+            
+            cursor.execute('SELECT id FROM course_students WHERE course_id = ? AND student_id = ?',
+                         (course_id, student_id))
+            if not cursor.fetchone():
+                cursor.execute('INSERT INTO course_students (course_id, student_id) VALUES (?, ?)',
+                             (course_id, student_id))
+            
+            db.commit()
+            return redirect(url_for('course_detail', course_id=course_id))
+            
+        except Exception as e:
+            db.rollback()
+            flash(f'Error adding student: {str(e)}', 'error')
+            return redirect(url_for('add_student', course_id=course_id))
+    
+    return render_template('add_student.html', course=course)
+
+
 @app.route('/course/<int:course_id>/edit', methods=['GET', 'POST'])
 def edit_course(course_id):
     db = get_db()
@@ -1400,6 +1459,205 @@ def export_all_xlsx():
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                      as_attachment=True,
                      download_name='ClassRecords_All.xlsx')
+
+
+@app.route('/export/all/pdf')
+def export_all_pdf():
+    """Export all courses grading sheets to a single PDF file"""
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute('SELECT * FROM courses')
+    courses = cursor.fetchall()
+    
+    output = io.BytesIO()
+    doc = SimpleDocTemplate(output, pagesize=letter, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        name='Title',
+        parent=styles['Heading1'],
+        fontSize=18,
+        textColor=colors.HexColor('#005AB5'),
+        spaceAfter=20,
+        alignment=TA_CENTER
+    )
+    
+    heading_style = ParagraphStyle(
+        name='Heading2',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#005AB5'),
+        spaceAfter=12,
+        spaceBefore=12
+    )
+    
+    for course in courses:
+        cursor.execute('''
+            SELECT s.* FROM students s
+            JOIN course_students cs ON s.id = cs.student_id
+            WHERE cs.course_id = ?
+            ORDER BY s.last_name, s.first_name
+        ''', (course['id'],))
+        students = cursor.fetchall()
+        
+        cursor.execute('SELECT * FROM grading_components WHERE course_id = ? ORDER BY name', (course['id'],))
+        components = cursor.fetchall()
+        
+        # Course header
+        elements.append(Paragraph(f"{course['course_title']} ({course['course_code']})", title_style))
+        elements.append(Paragraph(f"Schedule: {course['schedule']} {course['days']} | Room: {course['room']}", styles['Normal']))
+        elements.append(Spacer(1, 12))
+        
+        # Course info
+        elements.append(Paragraph("Course Information", heading_style))
+        info_data = [
+            ["Course Code:", course['course_code']],
+            ["Course Title:", course['course_title']],
+            ["Offering Number:", course['offering_number']],
+            ["Description:", course['description']],
+        ]
+        info_table = Table(info_data, colWidths=[120, 300])
+        info_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#005AB5')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cccccc')),
+        ]))
+        elements.append(info_table)
+        elements.append(Spacer(1, 12))
+        
+        # Grading criteria
+        elements.append(Paragraph("Grading Criteria", heading_style))
+        criteria_data = [["Component", "Prelim-Mid %", "Semis-Final %", "Total %"]]
+        for comp in components:
+            criteria_data.append([comp['name'], f"{comp['prelim_mid_weight']}%", 
+                                 f"{comp['semis_final_weight']}%", 
+                                 f"{comp['prelim_mid_weight'] + comp['semis_final_weight']}%"])
+        
+        total_prelim = sum(comp['prelim_mid_weight'] for comp in components)
+        total_semis = sum(comp['semis_final_weight'] for comp in components)
+        criteria_data.append(["TOTALS", f"{total_prelim}%", f"{total_semis}%", f"{total_prelim + total_semis}%"])
+        
+        criteria_table = Table(criteria_data)
+        criteria_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#005AB5')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cccccc')),
+        ]))
+        elements.append(criteria_table)
+        elements.append(Spacer(1, 12))
+        
+        # Statistics
+        passed = 0
+        for s in students:
+            cursor.execute('SELECT remarks FROM grade_summary WHERE course_id = ? AND student_id = ?',
+                         (course['id'], s['id']))
+            g = cursor.fetchone()
+            if g and g[0] == 'Passed':
+                passed += 1
+        
+        avg_grade = 0
+        total_grades = 0
+        for s in students:
+            cursor.execute('SELECT final_grade FROM grade_summary WHERE course_id = ? AND student_id = ?',
+                         (course['id'], s['id']))
+            g = cursor.fetchone()
+            if g:
+                avg_grade += g[0]
+                total_grades += 1
+        avg_grade = avg_grade / total_grades if total_grades > 0 else 0
+        
+        elements.append(Paragraph("Class Statistics", heading_style))
+        stats_data = [
+            ["Total Students", str(len(students))],
+            ["Passed", f"{passed} ({passed/len(students)*100:.1f}%)" if students else "0"],
+            ["Failed", f"{len(students)-passed} ({100-(passed/len(students)*100):.1f}%)" if students else "0"],
+            ["Class Average", f"{avg_grade:.2f}"],
+        ]
+        stats_table = Table(stats_data, colWidths=[150, 200])
+        stats_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#005AB5')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cccccc')),
+        ]))
+        elements.append(stats_table)
+        elements.append(Spacer(1, 12))
+        
+        # Student roster
+        elements.append(Paragraph("Student Roster", heading_style))
+        headers = ["No", "Last Name", "First Name", "ID", "PM Total", "SF Total", "Final", "Letter", "Remarks"]
+        roster_data = [headers]
+        
+        for idx, student in enumerate(students, 1):
+            cursor.execute('SELECT * FROM grade_summary WHERE course_id = ? AND student_id = ?',
+                         (course['id'], student['id']))
+            grade = cursor.fetchone()
+            
+            row = [idx, student['last_name'], student['first_name'], student['id_number']]
+            
+            cursor.execute('SELECT instance_id, score FROM scores WHERE course_id = ? AND student_id = ?',
+                         (course['id'], student['id']))
+            scores = {row['instance_id']: row['score'] for row in cursor.fetchall()}
+            
+            cursor.execute('''
+                SELECT ci.id, ci.period
+                FROM component_instances ci
+                JOIN grading_components gc ON ci.component_id = gc.id
+                WHERE ci.course_id = ?
+                ORDER BY ci.period, gc.name, ci.instance_number
+            ''', (course['id'],))
+            instances = cursor.fetchall()
+            
+            prelim_total = 0.0
+            semis_total = 0.0
+            for inst in instances:
+                instance_id = inst['id']
+                score = scores.get(instance_id, 0.0)
+                max_score = 100.0
+                weight_fraction = 1.0
+                
+                if inst['period'] == 'prelim_mid':
+                    component_weight = 1.0
+                    contribution = (score / max_score) * weight_fraction * component_weight
+                    prelim_total += contribution
+                else:
+                    component_weight = 1.0
+                    contribution = (score / max_score) * weight_fraction * component_weight
+                    semis_total += contribution
+            
+            if grade:
+                row.extend([round(grade['prelim_mid_total'], 2), round(grade['semis_final_total'], 2), 
+                          round(grade['final_grade'], 2), grade['letter_grade'], grade['remarks']])
+            else:
+                row.extend(['', '', '', '', ''])
+            
+            roster_data.append(row)
+        
+        roster_table = Table(roster_data)
+        roster_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#005AB5')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cccccc')),
+        ]))
+        elements.append(roster_table)
+        
+        # Add page break between courses
+        elements.append(Spacer(1, 24))
+        elements.append(Paragraph("-" * 100, styles['Normal']))
+        elements.append(Spacer(1, 24))
+    
+    doc.build(elements)
+    output.seek(0)
+    
+    return send_file(output,
+                     mimetype='application/pdf',
+                     as_attachment=True,
+                     download_name='ClassRecords_All.pdf')
 
 
 @app.route('/export/course/<int:course_id>/pdf')
