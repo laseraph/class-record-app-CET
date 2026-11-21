@@ -240,6 +240,9 @@ html.dark-mode {
     --warn: #fbbf24;
     --warn-bg: #78350f;
     --warn-border: #f59e0b;
+    --text-on-ok: #ffffff;
+    --text-on-bad: #ffffff;
+    --text-on-warn: #ffffff;
 }
 
 html.dark-mode body {
@@ -313,15 +316,15 @@ html.dark-mode .notice {
 }
 
 html.dark-mode .notice.success {
-    color: var(--ok);
+    color: var(--text-on-ok, #ffffff);
 }
 
 html.dark-mode .notice.error {
-    color: var(--bad);
+    color: var(--text-on-bad, #ffffff);
 }
 
 html.dark-mode .notice.info {
-    color: var(--hcdc-primary);
+    color: var(--text-on-warn, #ffffff);
 }
 
 /* Form Styles */

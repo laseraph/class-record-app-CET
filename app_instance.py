@@ -40,16 +40,7 @@ def init_db():
         db = get_db()
         cursor = db.cursor()
         
-        # Drop all tables
-        cursor.execute('DROP TABLE IF EXISTS grade_summary')
-        cursor.execute('DROP TABLE IF EXISTS scores')
-        cursor.execute('DROP TABLE IF EXISTS component_instances')
-        cursor.execute('DROP TABLE IF EXISTS grading_components')
-        cursor.execute('DROP TABLE IF EXISTS course_students')
-        cursor.execute('DROP TABLE IF EXISTS students')
-        cursor.execute('DROP TABLE IF EXISTS courses')
-        
-        # Create tables
+        # Create tables only if they don't exist (preserve user data)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS courses (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -145,11 +136,7 @@ def init_db():
         ''')
         
         db.commit()
-        
-        # Insert dummy data if empty
-        cursor.execute('SELECT COUNT(*) FROM courses')
-        if cursor.fetchone()[0] == 0:
-            insert_dummy_data(db)
+        print("Database tables created/verified successfully")
 
 
 def insert_dummy_data(db):
@@ -880,13 +867,13 @@ def add_students_to_course(course_id):
                         continue
                     
                     cursor.execute('''
-                        INSERT OR IGNORE INTO students (last_name, first_name, id_number, email)
-                        VALUES (?, ?, ?, ?)
+                        INSERT OR IGNORE INTO students (last_name, first_name, id_number, email, status)
+                        VALUES (?, ?, ?, ?, 'Active')
                     ''', (last_name, first_name, id_number, email))
                     
                     if cursor.rowcount == 0:
                         cursor.execute('''
-                            UPDATE students SET last_name = ?, first_name = ?, id_number = ?, email = ?
+                            UPDATE students SET last_name = ?, first_name = ?, id_number = ?, email = ?, status = 'Active'
                             WHERE id_number = ?
                         ''', (last_name, first_name, id_number, email, id_number))
                     
@@ -941,34 +928,28 @@ def add_course():
         course_id = cursor.lastrowid
         db.commit()
         
-        # Add default grading components - NEW structure per user requirements
-        # Each bigrade = 50% of final grade
-        # Within each bigrade: 50% class standing + 50% for TWO major exams (25% each)
-        #
-        # Prelim-Mid (50% of final):
-        #   - Class Standing: 50% of bigrade = 25% of final
-        #     - Assignments: 20% of bigrade = 10% of final
-        #     - Quizzes: 20% of bigrade = 10% of final
-        #     - Oral Recitation: 5% of bigrade = 2.5% of final
-        #     - Seatwork: 5% of bigrade = 2.5% of final
-        #   - Major Exams: 50% of bigrade = 25% of final
-        #     - Prelim Exam: 25% of bigrade = 12.5% of final
-        #     - Midterm Exam: 25% of bigrade = 12.5% of final
-        #
-        # Semis-Final (50% of final):
-        #   - Class Standing: 50% of bigrade = 25% of final
-        #   - Major Exams: 50% of bigrade = 25% of final
-        #     - Semi-Final Exam: 25% of bigrade = 12.5% of final
-        #     - Final Exam: 25% of bigrade = 12.5% of final
+        # Add default grading components - HCDC Class Record structure
+        # Each bigrade (Prelim-Mid and Semis-Final) = 50% of final grade
+        # Within each bigrade:
+        #   - Class Standing: 50% of bigrade
+        #     - Assignments: 10% of bigrade
+        #     - Quizzes: 30% of bigrade
+        #     - Oral Recitation: 5% of bigrade
+        #     - Seatwork: 5% of bigrade
+        #     - Projects: 0% of bigrade
+        #   - Major Exams: 50% of bigrade (25% each)
+        #     - Prelim/Semi Exam: 25% of bigrade
+        #     - Mid/Final Exam: 25% of bigrade
         components = [
-            ('Assignments', 'class_standing', 10.0, 10.0, 100.0),   # 20% of bigrade = 10% of final
-            ('Quizzes', 'class_standing', 10.0, 10.0, 100.0),      # 20% of bigrade = 10% of final
-            ('Oral Recitation', 'class_standing', 2.5, 2.5, 100.0), # 5% of bigrade = 2.5% of final
-            ('Seatwork', 'class_standing', 2.5, 2.5, 100.0),        # 5% of bigrade = 2.5% of final
-            ('Prelim Exam', 'major_exam', 12.5, 0.0, 100.0),        # 25% of bigrade = 12.5% of final
-            ('Midterm Exam', 'major_exam', 12.5, 0.0, 100.0),       # 25% of bigrade = 12.5% of final
-            ('Semi-Final Exam', 'major_exam', 0.0, 12.5, 100.0),    # 25% of bigrade = 12.5% of final
-            ('Final Exam', 'major_exam', 0.0, 12.5, 100.0),         # 25% of bigrade = 12.5% of final
+            ('Assignments', 'class_standing', 10.0, 10.0, 100.0),
+            ('Quizzes', 'class_standing', 30.0, 30.0, 100.0),
+            ('Oral Recitation', 'class_standing', 5.0, 5.0, 100.0),
+            ('Seatwork', 'class_standing', 5.0, 5.0, 100.0),
+            ('Projects', 'class_standing', 0.0, 0.0, 100.0),
+            ('Prelim Exam', 'major_exam', 25.0, 0.0, 100.0),
+            ('Midterm Exam', 'major_exam', 25.0, 0.0, 100.0),
+            ('Semi-Final Exam', 'major_exam', 0.0, 25.0, 100.0),
+            ('Final Exam', 'major_exam', 0.0, 25.0, 100.0),
         ]
         
         for name, category, prelim, semis, max_score in components:
@@ -1197,6 +1178,7 @@ def add_student(course_id):
         first_name = request.form.get('first_name', '').strip()
         id_number = request.form.get('id_number', '').strip()
         email = request.form.get('email', '').strip()
+        status = request.form.get('status', 'Active').strip()
         
         if not last_name or not first_name:
             flash('Last Name and First Name are required', 'error')
@@ -1210,15 +1192,15 @@ def add_student(course_id):
                 student_id = existing_student['id']
                 cursor.execute('''
                     UPDATE students 
-                    SET last_name = ?, first_name = ?, email = ?
+                    SET last_name = ?, first_name = ?, email = ?, status = ?
                     WHERE id = ?
-                ''', (last_name, first_name, email, student_id))
+                ''', (last_name, first_name, email, status, student_id))
                 flash('Student updated and added to course!', 'success')
             else:
                 cursor.execute('''
-                    INSERT INTO students (last_name, first_name, id_number, email)
-                    VALUES (?, ?, ?, ?)
-                ''', (last_name, first_name, id_number, email))
+                    INSERT INTO students (last_name, first_name, id_number, email, status)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (last_name, first_name, id_number, email, status))
                 student_id = cursor.lastrowid
                 flash('Student added successfully!', 'success')
             
@@ -1271,6 +1253,86 @@ def edit_course(course_id):
         return redirect(url_for('course_detail', course_id=course_id))
     
     return render_template('edit_course.html', course=course)
+
+
+@app.route('/course/<int:course_id>/delete', methods=['POST'])
+def delete_course(course_id):
+    """Delete a course and all its related data"""
+    db = get_db()
+    cursor = db.cursor()
+    
+    # Get course info for confirmation message
+    cursor.execute('SELECT * FROM courses WHERE id = ?', (course_id,))
+    course = cursor.fetchone()
+    
+    if not course:
+        flash('Course not found', 'error')
+        return redirect(url_for('dashboard'))
+    
+    # Delete all related data
+    cursor.execute('DELETE FROM scores WHERE course_id = ?', (course_id,))
+    cursor.execute('DELETE FROM grade_summary WHERE course_id = ?', (course_id,))
+    cursor.execute('DELETE FROM component_instances WHERE course_id = ?', (course_id,))
+    cursor.execute('DELETE FROM grading_components WHERE course_id = ?', (course_id,))
+    cursor.execute('DELETE FROM course_students WHERE course_id = ?', (course_id,))
+    cursor.execute('DELETE FROM courses WHERE id = ?', (course_id,))
+    
+    db.commit()
+    flash(f'Course "{course["course_code"]} - {course["course_title"]}" and all its data deleted successfully!', 'success')
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/course/<int:course_id>/student/<int:student_id>/remove', methods=['POST'])
+def remove_student_from_course(course_id, student_id):
+    """Remove a student from a course"""
+    db = get_db()
+    cursor = db.cursor()
+    
+    # Get student info for confirmation message
+    cursor.execute('SELECT * FROM students WHERE id = ?', (student_id,))
+    student = cursor.fetchone()
+    
+    if not student:
+        flash('Student not found', 'error')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    # Remove student from course
+    cursor.execute('DELETE FROM course_students WHERE course_id = ? AND student_id = ?', (course_id, student_id))
+    cursor.execute('DELETE FROM scores WHERE course_id = ? AND student_id = ?', (course_id, student_id))
+    cursor.execute('DELETE FROM grade_summary WHERE course_id = ? AND student_id = ?', (course_id, student_id))
+    
+    db.commit()
+    flash(f'{student["last_name"]}, {student["first_name"]} removed from course!', 'success')
+    return redirect(url_for('course_detail', course_id=course_id))
+
+
+@app.route('/student/<int:student_id>/update-status', methods=['POST'])
+def update_student_status(student_id):
+    """Update a student's status (Active, Dropped, etc.)"""
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute('SELECT * FROM students WHERE id = ?', (student_id,))
+    student = cursor.fetchone()
+    
+    if not student:
+        flash('Student not found', 'error')
+        return redirect(url_for('dashboard'))
+    
+    new_status = request.form.get('status')
+    if not new_status:
+        flash('No status provided', 'error')
+        return redirect(url_for('dashboard'))
+    
+    cursor.execute('UPDATE students SET status = ? WHERE id = ?', (new_status, student_id))
+    db.commit()
+    
+    flash(f'{student["last_name"]}, {student["first_name"]} status updated to: {new_status}', 'success')
+    
+    course_id = request.form.get('course_id')
+    if course_id:
+        return redirect(url_for('course_detail', course_id=course_id))
+    return redirect(url_for('dashboard'))
 
 
 @app.route('/master-list')
@@ -2214,8 +2276,9 @@ def import_grades():
                                         except:
                                             pass
                 
-                # Recalculate grades for this course
-                recalculate_all_grades(course_id)
+                # Recalculate grades for all imported courses
+                for course_id in [c['id'] for c in db.execute('SELECT id FROM courses').fetchall()]:
+                    recalculate_all_grades(course_id)
                 
                 flash(f'Import complete! {imported_courses} courses, {imported_students} students, {imported_grades} grades imported.', 'success')
                 return redirect(url_for('dashboard'))
@@ -2232,10 +2295,6 @@ def import_grades():
 
 
 if __name__ == '__main__':
-    # Only clean up database if it's the default location (development mode)
-    if DATABASE == 'class_record_instance.db' and os.path.exists(DATABASE):
-        os.remove(DATABASE)
-    
     # Initialize and run
     init_db()
     app.run(debug=True, host='0.0.0.0', port=5000)
