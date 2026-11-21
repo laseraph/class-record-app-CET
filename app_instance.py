@@ -2264,19 +2264,59 @@ def import_grades():
                             if not student_cols:
                                 student_cols['full_name'] = col
                     
+                    # Find where the actual student data starts
+                    # Skip header rows that contain course metadata
+                    start_row = 0
+                    for i in range(len(df)):
+                        row = df.iloc[i]
+                        row_str = ' '.join(str(cell) for cell in row).lower()
+                        
+                        # Skip rows that contain course metadata
+                        if any(pattern in row_str for pattern in [
+                            'time:', 'days:', 'room:', 'schedule', '·', 'lec', 'lab',
+                            'section', 'instructor', 'professor', 'teacher',
+                            'semester', 'school year', 'academic year',
+                            'course code', 'course title', 'subject',
+                            'description', 'prerequisite', 'credits',
+                            'no. of students', 'class size'
+                        ]):
+                            start_row = i + 1
+                            continue
+                        
+                        # Also skip rows where first column is not a number
+                        first_val = row.iloc[0] if len(row) > 0 else None
+                        if first_val is None or pd.isna(first_val):
+                            start_row = i + 1
+                            continue
+                        
+                        # If we get here, this might be the start of student data
+                        # Verify by checking if it looks like a student row
+                        has_name = any(
+                            pd.notna(row.get(col)) and str(row.get(col)).strip()
+                            for col in student_cols.values()
+                        )
+                        if has_name:
+                            start_row = i
+                            break
+                    
                     # If we have student columns, import students
                     if student_cols:
-                        for _, row in df.iterrows():
-                            # Skip header rows - check if first column is numeric or looks like a header
+                        for i in range(start_row, len(df)):
+                            row = df.iloc[i]
+                            
+                            # Double-check this row doesn't look like a header
                             first_val = row.iloc[0] if len(row) > 0 else None
+                            row_str = ' '.join(str(cell) for cell in row).lower()
+                            
+                            # Skip if it looks like a header row
+                            if any(pattern in row_str for pattern in [
+                                'time:', 'days:', 'room:', 'schedule', '·',
+                                'total', 'average', 'summary', 'remark'
+                            ]):
+                                continue
+                            
                             if first_val is None or pd.isna(first_val):
                                 continue
-                            # Skip if first column looks like a header (contains letters only, or is a number like 1, 2, 3)
-                            if isinstance(first_val, (int, float)) and first_val > 0 and first_val < 100:
-                                # This might be a row number, check if other columns have data
-                                has_data = any(pd.notna(row[col]) and str(row[col]).strip() for col in student_cols.values())
-                                if not has_data:
-                                    continue
                             
                             last_name = ''
                             first_name = ''
