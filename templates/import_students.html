@@ -1,118 +1,65 @@
 {% extends "base.html" %}
 
-{% block title %}Import Students - Class Record App{% endblock %}
+{% block title %}Import Students - HCDC Class Record{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Import Students</li>
-        </ol>
-    </nav>
+<div style="margin-bottom: 16px;">
+    <a href="{{ url_for('dashboard') }}" class="course-btn" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
 
-    <!-- Header -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="bi bi-upload"></i> Import Students</h4>
+<div class="card">
+    <h1 style="margin: 0 0 8px 0;">Import Students</h1>
+    <p class="subtitle">Upload a CSV or Excel file containing student data</p>
+    
+    <form method="POST" action="{{ url_for('add_students_to_course') }}" enctype="multipart/form-data" style="margin-top: 20px;">
+        <div class="form-group">
+            <label for="course_id">Select Course <span style="color: var(--hcdc-secondary);">*</span></label>
+            <select id="course_id" name="course_id" required>
+                <option value="" selected disabled>Select a course...</option>
+                {% for course in courses %}
+                <option value="{{ course.id }}">{{ course.course_code }} - {{ course.course_title }}</option>
+                {% endfor %}
+            </select>
         </div>
-        <div class="card-body">
-            <form method="POST" action="" enctype="multipart/form-data">
-                <div class="row g-3">
-                    <!-- Course Selection -->
-                    <div class="col-md-6">
-                        <label class="form-label">Select Course <span class="text-danger">*</span></label>
-                        <select class="form-select" name="course_id" required>
-                            <option value="" selected disabled>Select a course...</option>
-                            {% for course in courses %}
-                            <option value="{{ course.id }}" {% if course.id == selected_course_id %}selected{% endif %}>
-                                {{ course.course_title }} ({{ course.course_code }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">File Type <span class="text-danger">*</span></label>
-                        <div class="btn-group" role="group">
-                            <input type="radio" class="btn-check" name="file_type" id="csv" value="csv" checked>
-                            <label class="btn btn-outline-primary" for="csv">
-                                <i class="bi bi-filetype-csv"></i> CSV
-                            </label>
-                            <input type="radio" class="btn-check" name="file_type" id="excel" value="excel">
-                            <label class="btn btn-outline-success" for="excel">
-                                <i class="bi bi-file-earmark-excel"></i> Excel
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- File Upload -->
-                    <div class="col-12">
-                        <label class="form-label">Upload File <span class="text-danger">*</span></label>
-                        <div class="card border-2 border-dashed border-primary">
-                            <div class="card-body text-center py-5">
-                                <i class="bi bi-upload text-primary fs-1 mb-3"></i>
-                                <h5 class="card-title">Drag & Drop or Click to Browse</h5>
-                                <p class="card-text text-muted mb-3">
-                                    Supported formats: .csv, .xlsx, .xls
-                                </p>
-                                <input type="file" class="form-control" name="file" 
-                                       accept=".csv,.xlsx,.xls" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr>
-                
-                <!-- File Format Info -->
-                <div class="alert alert-info">
-                    <h6 class="alert-heading mb-2">
-                        <i class="bi bi-info-circle"></i> Required File Format
-                    </h6>
-                    <p class="mb-0">
-                        Your file must contain the following columns (column names can vary):
-                    </p>
-                    <ul class="mb-0 mt-2">
-                        <li><strong>Last Name</strong> (or Last, LNAME)</li>
-                        <li><strong>First Name</strong> (or First, FNAME)</li>
-                        <li><strong>ID Number</strong> (or ID, IDNO)</li>
-                        <li><strong>Email Address</strong> (or Email, EMAIL) - Optional</li>
-                    </ul>
-                </div>
-                
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-upload"></i> Import Students
-                    </button>
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Cancel
-                    </a>
-                </div>
-            </form>
+        
+        <div class="form-group">
+            <label for="file_type">File Type <span style="color: var(--hcdc-secondary);">*</span></label>
+            <select id="file_type" name="file_type" required>
+                <option value="csv">CSV (.csv)</option>
+                <option value="excel">Excel (.xlsx, .xls)</option>
+            </select>
         </div>
-    </div>
-
-    <!-- Sample CSV Download -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Sample CSV Format</h5>
-        </div>
-        <div class="card-body">
-            <p>
-                Download a sample CSV file to see the required format:
-            </p>
-            <a href="{{ url_for('static', filename='sample_students.csv') }}" 
-               class="btn btn-outline-secondary" download>
-                <i class="bi bi-download"></i> Download Sample CSV
-            </a>
-            <div class="mt-3">
-                <pre class="bg-light p-3 rounded border">Last Name,First Name,ID Number,Email Address
-CELESTIAL,Gerry Luz,59844380,gerry@email.com
-DELA CRUZ,Rojemie,59842976,rojemie@email.com
-JAMERO,Van Vincent,59845710,van@email.com</pre>
+        
+        <div class="form-group">
+            <label for="file">Upload File <span style="color: var(--hcdc-secondary);">*</span></label>
+            <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls" required>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+                File should contain: Last Name, First Name, ID Number, Email Address
             </div>
         </div>
+        
+        <div class="actions" style="margin-top: 24px;">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-upload"></i> Import Students
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="bi bi-x"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="card" style="margin-top: 20px;">
+    <h2 style="margin: 0 0 16px 0; font-size: 16px;">Sample CSV Format</h2>
+    <div style="background: var(--surface); border-radius: 8px; padding: 12px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+Last Name,First Name,ID Number,Email Address<br>
+Doe,John,20240001,john.doe@hcdc.edu.ph<br>
+Smith,Jane,20240002,jane.smith@hcdc.edu.ph
+    </div>
+    <div style="margin-top: 12px; font-size: 12px; color: var(--muted);">
+        <i class="bi bi-info-circle"></i> Student pictures are not required and will not be imported.
     </div>
 </div>
 {% endblock %}

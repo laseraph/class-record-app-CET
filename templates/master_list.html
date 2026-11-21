@@ -1,118 +1,109 @@
 {% extends "base.html" %}
 
-{% block title %}Master List - Class Record App{% endblock %}
+{% block title %}Master List - HCDC Class Record{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Master Student List</li>
-        </ol>
-    </nav>
+<div style="margin-bottom: 16px;">
+    <a href="{{ url_for('dashboard') }}" class="course-btn" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
 
-    <!-- Header -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"><i class="bi bi-people"></i> Master Student List</h4>
-            <div class="btn-group" role="group">
-                <a href="{{ url_for('export_all_xlsx') }}" class="btn btn-light">
-                    <i class="bi bi-file-earmark-excel"></i> Export All (XLSX)
-                </a>
-                <a href="#" class="btn btn-light" onclick="alert('PDF export coming soon')">
-                    <i class="bi bi-file-earmark-pdf"></i> Export All (PDF)
-                </a>
-            </div>
-        </div>
-        <div class="card-body">
-            <p class="text-muted">
-                Total Students: <strong>{{ students|length }}</strong>
-            </p>
+<div class="card">
+    <div class="section-header">
+        <h1 style="margin: 0;">Master List</h1>
+        <div style="display: flex; gap: 8px;">
+            <a href="{{ url_for('export_all_xlsx') }}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                <i class="bi bi-file-earmark-excel"></i> Export XLSX
+            </a>
+            <a href="{{ url_for('export_all_pdf') }}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                <i class="bi bi-file-earmark-pdf"></i> Export PDF
+            </a>
         </div>
     </div>
-
-    <!-- Course Statistics -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-graph-up"></i> Course Statistics</h5>
+    
+    <p class="subtitle">All students across all courses</p>
+    
+    <!-- Summary Stats -->
+    <div class="stat-row" style="margin-top: 20px;">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_students }}</div>
+            <div class="stat-label">Total Students</div>
         </div>
-        <div class="card-body">
-            <div class="row">
-                {% for stat in course_stats %}
-                <div class="col-md-4 col-sm-6 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h6 class="card-subtitle mb-2 text-muted">{{ stat.course.course_code }}</h6>
-                            <h5 class="card-title">{{ stat.course.course_title }}</h5>
-                            <div class="d-flex justify-content-between mt-3">
-                                <div>
-                                    <p class="mb-1">
-                                        <i class="bi bi-people text-hcdc-primary"></i> 
-                                        <strong>{{ stat.passed }}</strong> Passed
-                                    </p>
-                                    <p class="mb-0">
-                                        <i class="bi bi-x-circle text-hcdc-secondary"></i> 
-                                        <strong>{{ stat.failed }}</strong> Failed
-                                    </p>
-                                </div>
-                                <div class="text-end">
-                                    <h3 class="text-{% if stat.pass_rate >= 75 %}success{% elif stat.pass_rate >= 50 %}warning{% else %}danger{% endif %}">
-                                        {{ "%.1f"|format(stat.pass_rate) }}%
-                                    </h3>
-                                    <small class="text-muted">Pass Rate</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ passed_students }}</div>
+            <div class="stat-label">Passed</div>
         </div>
-    </div>
-
-    <!-- Student Table -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-list"></i> All Students</h5>
+        <div class="stat-card">
+            <div class="stat-value">{{ failed_students }}</div>
+            <div class="stat-label">Failed</div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Last Name</th>
-                            <th>First Name</th>
-                            <th>ID Number</th>
-                            <th>Email</th>
-                            <th>Grades</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in students %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td><strong>{{ item.student.last_name }}</strong></td>
-                            <td>{{ item.student.first_name }}</td>
-                            <td>{{ item.student.id_number }}</td>
-                            <td>{{ item.student.email or '-' }}</td>
-                            <td>
-                                <small class="text-muted">{{ item.grades }}</small>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ "%.2f"|format(overall_pass_rate) }}%</div>
+            <div class="stat-label">Overall Pass Rate</div>
         </div>
-    </div>
-
-    <!-- Back Button -->
-    <div class="mt-4">
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Dashboard
-        </a>
     </div>
 </div>
+
+<!-- Per-Course Breakdown -->
+{% for course in courses %}
+<div class="card" style="margin-top: 20px;">
+    <h2 style="margin: 0 0 16px 0; font-size: 16px;">
+        <span style="background: var(--hcdc-primary-light); color: var(--hcdc-primary); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+            {{ course.course_code }}
+        </span>
+        {{ course.course_title }} ({{ course.student_count }} students)
+    </h2>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>ID Number</th>
+                    <th>Final Grade</th>
+                    <th>Letter</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in course.roster %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ item.student.last_name }}, {{ item.student.first_name }}</strong></td>
+                    <td>{{ item.student.id_number }}</td>
+                    <td>{{ "%.2f"|format(item.grade.final_grade) if item.grade else '-' }}%</td>
+                    <td>{{ item.grade.letter_grade if item.grade else '-' }}</td>
+                    <td>
+                        {% if item.grade %}
+                            <span class="pill {% if item.grade.remarks == 'Passed' %}pass{% else %}fail{% endif %}">
+                                {{ item.grade.remarks }}
+                            </span>
+                        {% else %}
+                            <span class="pill drop">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px;">
+        <span style="color: var(--muted);">
+            <i class="bi bi-check-circle" style="color: var(--ok);"></i> Passed: {{ course.passed }}
+        </span>
+        <span style="color: var(--muted);">
+            <i class="bi bi-x-circle" style="color: var(--bad);"></i> Failed: {{ course.failed }}
+        </span>
+        <span style="color: var(--muted);">
+            <i class="bi bi-percent"></i> Pass Rate: {{ course.pass_rate }}%
+        </span>
+        <span style="color: var(--muted); margin-left: auto;">
+            <i class="bi bi-graph-up"></i> Average: {{ "%.2f"|format(course.avg) }}%
+        </span>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

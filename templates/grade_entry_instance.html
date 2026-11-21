@@ -1,238 +1,193 @@
 {% extends "base.html" %}
 
-{% block title %}Grade Entry - {{ course.course_code }} - Class Record{% endblock %}
+{% block title %}Grade Entry - {{ course.course_code }} - HCDC Class Record{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}">{{ course.course_code }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Grade Entry</li>
-                </ol>
-            </nav>
-        </div>
+<div style="margin-bottom: 16px;">
+    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="course-btn" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="bi bi-arrow-left"></i> Back to Course
+    </a>
+</div>
+
+<div class="card">
+    <div class="section-header">
+        <h1 style="margin: 0;">Grade Entry: {{ course.course_title }}</h1>
+        <a href="{{ url_for('grading_criteria', course_id=course.id) }}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+            <i class="bi bi-percent"></i> Manage Criteria
+        </a>
     </div>
     
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">
-                        <i class="bi bi-graduation-cap"></i> Grade Entry - {{ course.course_code }}
-                    </h2>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h4>{{ course.course_title }}</h4>
-                            <p class="text-muted">
-                                Schedule: {{ course.schedule }} {{ course.days }} | Room: {{ course.room }}
-                            </p>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <div class="btn-group" role="group">
-                                <a href="{{ url_for('course_detail', course_id=course.id) }}" 
-                                   class="btn btn-outline-secondary">
-                                    <i class="bi bi-arrow-left"></i> Back to Course
-                                </a>
-                                <a href="{{ url_for('export_course_xlsx', course_id=course.id) }}" 
-                                   class="btn btn-primary">
-                                    <i class="bi bi-file-excel"></i> Export XLSX
-                                </a>
-                                <a href="{{ url_for('export_course_pdf', course_id=course.id) }}" 
-                                   class="btn btn-secondary">
-                                    <i class="bi bi-file-pdf"></i> Export PDF
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <p class="subtitle">Enter scores for each assessment instance</p>
+    
+    <!-- Period Tabs -->
+    <div style="display: flex; gap: 4px; margin: 16px 0; border-bottom: 1px solid var(--border);">
+        <a href="#prelim" class="tab-button active" onclick="showPeriod('prelim')" style="padding: 8px 16px; border: none; background: transparent; color: var(--hcdc-primary); font-weight: 600; font-size: 13px; cursor: pointer; border-bottom: 2px solid var(--hcdc-primary);">
+            Prelim-Mid Period
+        </a>
+        <a href="#semis" class="tab-button" onclick="showPeriod('semis')" style="padding: 8px 16px; border: none; background: transparent; color: var(--muted); font-weight: 600; font-size: 13px; cursor: pointer;">
+            Semis-Final Period
+        </a>
     </div>
     
-    <!-- Student Selection -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h4 class="mb-0">Select Student</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        {% for student in students %}
-                        <div class="col-md-3 mb-2">
-                            <a href="?student_id={{ student.id }}" 
-                               class="btn btn-{{ 'primary' if current_student_id == student.id else 'outline-primary' }} w-100">
-                                {{ student.last_name }}, {{ student.first_name }}
-                            </a>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Grade Entry Form -->
-    <form method="POST" action="">
-        <input type="hidden" name="student_id" value="{{ current_student_id }}">
+    <!-- Prelim-Mid Instances -->
+    <div id="prelim-instances">
+        <h3 style="font-size: 14px; font-weight: 700; color: var(--ink); margin: 16px 0 8px 0;">
+            <span style="background: var(--hcdc-primary-light); color: var(--hcdc-primary); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                PRELIM-MID (50%)
+            </span>
+        </h3>
         
-        {% if current_student_id %}
-        {% set current_student = students|selectattr('id', 'equalto', current_student_id)|first %}
-        <div class="row">
-            <div class="col-12">
-                <div class="card mb-4">
-                    <div class="card-header bg-secondary text-white">
-                        <h4 class="mb-0">
-                            Grading for: {{ current_student.last_name }}, {{ current_student.first_name }} 
-                            (ID: {{ current_student.id_number }})
-                        </h4>
-                    </div>
-                    <div class="card-body">
-                        
-                        <!-- Prelim-Mid Period -->
-                        <div class="mb-4">
-                            <h3 class="text-primary border-bottom pb-2">
-                                <i class="bi bi-calendar-alt"></i> Prelim-Mid Period
-                                <small class="text-muted float-end">
-                                    Total: <strong>{{ "%.2f"|format(prelim_total) }}%</strong>
-                                </small>
-                            </h3>
-                            
-                            {% for component_name, instances in instances_by_component.items() %}
-                            {% if instances|selectattr('period', 'equalto', 'prelim_mid')|list|length > 0 %}
-                            <div class="card mb-3">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">{{ component_name }}</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        {% for inst in instances %}
-                                        {% if inst.period == 'prelim_mid' %}
-                                        <div class="col-md-3 mb-2">
-                                            <div class="form-group">
-                                                <label for="score_{{ inst.id }}" class="form-label small">
-                                                    {{ inst.title }} (Max: {{ inst.max_score }})
-                                                </label>
-                                                <input type="number" 
-                                                       class="form-control form-control-sm" 
-                                                       id="score_{{ inst.id }}" 
-                                                       name="score_{{ inst.id }}"
-                                                       min="0" 
-                                                       max="{{ inst.max_score }}"
-                                                       step="0.01"
-                                                       value="{{ scores.get(inst.id, 0)|float|round(2) }}"
-                                                       required>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
+        {% for comp in components %}
+        {% if comp.prelim_mid_weight > 0 %}
+        {% set comp_instances = instances_by_component.get(comp.name, []) | selectattr('period', 'equalto', 'prelim_mid') | list %}
+        {% if comp_instances %}
+        <div style="background: var(--surface); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h4 style="margin: 0; font-size: 14px; font-weight: 700;">{{ comp.name }} ({{ comp.prelim_mid_weight }}%)</h4>
+            </div>
+            
+            <div class="table-container">
+                <table style="font-size: 13px;">
+                    <thead>
+                        <tr>
+                            <th>Instance</th>
+                            {% for student in students %}
+                            <th>{{ student.last_name[:3] }}.</th>
                             {% endfor %}
-                        </div>
-                        
-                        <!-- Semis-Final Period -->
-                        <div class="mb-4">
-                            <h3 class="text-primary border-bottom pb-2">
-                                <i class="bi bi-calendar-alt"></i> Semis-Final Period
-                                <small class="text-muted float-end">
-                                    Total: <strong>{{ "%.2f"|format(semis_total) }}%</strong>
-                                </small>
-                            </h3>
-                            
-                            {% for component_name, instances in instances_by_component.items() %}
-                            {% if instances|selectattr('period', 'equalto', 'semis_final')|list|length > 0 %}
-                            <div class="card mb-3">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">{{ component_name }}</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        {% for inst in instances %}
-                                        {% if inst.period == 'semis_final' %}
-                                        <div class="col-md-3 mb-2">
-                                            <div class="form-group">
-                                                <label for="score_{{ inst.id }}" class="form-label small">
-                                                    {{ inst.title }} (Max: {{ inst.max_score }})
-                                                </label>
-                                                <input type="number" 
-                                                       class="form-control form-control-sm" 
-                                                       id="score_{{ inst.id }}" 
-                                                       name="score_{{ inst.id }}"
-                                                       min="0" 
-                                                       max="{{ inst.max_score }}"
-                                                       step="0.01"
-                                                       value="{{ scores.get(inst.id, 0)|float|round(2) }}"
-                                                       required>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inst in comp_instances %}
+                        <tr>
+                            <td>
+                                <strong>{{ inst.title }}</strong><br>
+                                <small style="color: var(--muted);">Max: {{ inst.max_score }}</small>
+                            </td>
+                            {% for student in students %}
+                            <td>
+                                <input type="number" 
+                                       name="score_{{ inst.id }}_{{ student.id }}"
+                                       value="{{ scores.get(inst.id, {}).get(student.id, '') }}"
+                                       style="width: 60px; padding: 4px; border: 1px solid var(--border); border-radius: 4px; text-align: center;"
+                                       min="0"
+                                       max="{{ inst.max_score }}"
+                                       step="0.1">
+                            </td>
                             {% endfor %}
-                        </div>
-                        
-                        <!-- Summary -->
-                        <div class="card bg-light mb-4">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <h5>Prelim-Mid Total:</h5>
-                                        <p class="display-6 text-primary">{{ "%.2f"|format(prelim_total) }}%</p>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <h5>Semis-Final Total:</h5>
-                                        <p class="display-6 text-primary">{{ "%.2f"|format(semis_total) }}%</p>
-                                    </div>
-                                    <div class="col-md-4">
-                                        {% if grade_summary %}
-                                        <h5>Final Grade:</h5>
-                                        <p class="display-6 text-hcdc-primary">{{ "%.2f"|format(grade_summary.final_grade) }}%</p>
-                                        <p class="mb-0">
-                                            <strong>{{ grade_summary.letter_grade }}</strong> - {{ grade_summary.remarks }}
-                                        </p>
-                                        {% else %}
-                                        <h5>Final Grade:</h5>
-                                        <p class="display-6">N/A</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-save"></i> Save Grades
-                            </button>
-                        </div>
-                        
-                    </div>
-                </div>
+                            <td>
+                                <button type="button" class="btn btn-secondary" style="font-size: 11px; padding: 4px 8px;" onclick="saveInstance({{ inst.id }})">
+                                    <i class="bi bi-save"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
         {% endif %}
-    </form>
+        {% endif %}
+        {% endfor %}
+    </div>
+    
+    <!-- Semis-Final Instances -->
+    <div id="semis-instances" style="display: none;">
+        <h3 style="font-size: 14px; font-weight: 700; color: var(--ink); margin: 16px 0 8px 0;">
+            <span style="background: var(--hcdc-secondary-light); color: var(--hcdc-secondary); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                SEMIS-FINAL (50%)
+            </span>
+        </h3>
+        
+        {% for comp in components %}
+        {% if comp.semis_final_weight > 0 %}
+        {% set comp_instances = instances_by_component.get(comp.name, []) | selectattr('period', 'equalto', 'semis_final') | list %}
+        {% if comp_instances %}
+        <div style="background: var(--surface); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h4 style="margin: 0; font-size: 14px; font-weight: 700;">{{ comp.name }} ({{ comp.semis_final_weight }}%)</h4>
+            </div>
+            
+            <div class="table-container">
+                <table style="font-size: 13px;">
+                    <thead>
+                        <tr>
+                            <th>Instance</th>
+                            {% for student in students %}
+                            <th>{{ student.last_name[:3] }}.</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inst in comp_instances %}
+                        <tr>
+                            <td>
+                                <strong>{{ inst.title }}</strong><br>
+                                <small style="color: var(--muted);">Max: {{ inst.max_score }}</small>
+                            </td>
+                            {% for student in students %}
+                            <td>
+                                <input type="number" 
+                                       name="score_{{ inst.id }}_{{ student.id }}"
+                                       value="{{ scores.get(inst.id, {}).get(student.id, '') }}"
+                                       style="width: 60px; padding: 4px; border: 1px solid var(--border); border-radius: 4px; text-align: center;"
+                                       min="0"
+                                       max="{{ inst.max_score }}"
+                                       step="0.1">
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+    </div>
+    
+    <div class="actions" style="margin-top: 20px;">
+        <button type="submit" class="btn btn-primary" form="saveAllForm">
+            <i class="bi bi-save"></i> Save All Grades
+        </button>
+        <button type="button" class="btn btn-primary" onclick="calculateAll()">
+            <i class="bi bi-calculator"></i> Calculate All
+        </button>
+        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">
+            <i class="bi bi-x"></i> Cancel
+        </a>
+    </div>
 </div>
 
-{% block scripts %}
-<script>
-$(document).ready(function() {
-    // Auto-calculate totals when scores change
-    $('input[type="number"]').on('change', function() {
-        // This is handled server-side on submit
-    });
-});
-</script>
-{% endblock %}
+<form id="saveAllForm" method="POST" action="{{ url_for('save_all_scores', course_id=course.id) }}" style="display: none;">
+</form>
 
+<script>
+    function showPeriod(period) {
+        document.getElementById('prelim-instances').style.display = period === 'prelim' ? 'block' : 'none';
+        document.getElementById('semis-instances').style.display = period === 'semis' ? 'block' : 'none';
+        
+        // Update tab buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+            btn.style.color = 'var(--muted)';
+            btn.style.borderBottom = 'none';
+        });
+        
+        event.target.classList.add('active');
+        event.target.style.color = 'var(--hcdc-primary)';
+        event.target.style.borderBottom = '2px solid var(--hcdc-primary)';
+    }
+    
+    function calculateAll() {
+        // This would trigger calculation on the server
+        alert('Calculating all grades...');
+    }
+    
+    function saveInstance(instanceId) {
+        // This would save scores for a specific instance
+        alert('Saving instance ' + instanceId + '...');
+    }
+</script>
 {% endblock %}

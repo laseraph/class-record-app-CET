@@ -8,12 +8,11 @@
     <!-- Google Fonts - Inter (Professional, Clean) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Grade Checker Style CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/grade_checker_style.css') }}">
     
     {% block extra_css %}{% endblock %}
     
@@ -31,75 +30,31 @@
                 document.documentElement.classList.add('dark-mode');
             }
         })();
-        
-        // Initialize icon after DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            const icon = document.getElementById('darkModeIcon');
-            if (icon) {
-                const isDark = document.documentElement.classList.contains('dark-mode');
-                icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
-            }
-        });
     </script>
 </head>
-<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-    
+<body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                <i class="bi bi-mortarboard-fill"></i> HCDC Class Record
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+    <nav class="navbar">
+        <div class="brand">
+            <div class="logo" aria-hidden="true">&nbsp;</div>
+            <h1>HCDC Class Record</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                <i class="bi bi-moon-stars-fill" id="darkModeIcon"></i>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('dashboard') }}">
-                            <i class="bi bi-house"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('master_list') }}">
-                            <i class="bi bi-people"></i> Master List
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('import_students') }}">
-                            <i class="bi bi-upload"></i> Import Students
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('add_course') }}">
-                            <i class="bi bi-plus-circle"></i> Add Course
-                        </a>
-                    </li>
-                </ul>
-                <div class="d-flex align-items-center">
-                    <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
-                        <i class="bi bi-moon-stars-fill" id="darkModeIcon"></i>
-                    </button>
-                </div>
-            </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="container-fluid mt-4">
+    <main class="main-container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div class="row justify-content-center">
-                    <div class="col-md-8 col-lg-6">
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                                <i class="bi bi-{{ 'exclamation-triangle-fill' if category == 'error' else 'check-circle-fill' if category == 'success' else 'info-circle-fill' }}"></i>
-                                <strong>{{ category|title }}:</strong> {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
+                {% for category, message in messages %}
+                    <div class="notice {% if category == 'error' %}error{% elif category == 'success' %}success{% elif category == 'warning' %}warning{% else %}info{% endif %}">
+                        <p><strong>{% if category == 'error' %}Error{% elif category == 'success' %}Success{% elif category == 'warning' %}Warning{% else %}Info{% endif %}:</strong> {{ message }}</p>
                     </div>
-                </div>
+                {% endfor %}
             {% endif %}
         {% endwith %}
         
@@ -107,17 +62,10 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-secondary py-3 mt-5 text-white">
-        <div class="container-fluid text-center">
-            <small>HCDC Class Record Application &copy; 2024 | CET Department</small>
-        </div>
+    <footer class="footer">
+        <p>HCDC Class Record Application &copy; 2024 | CET Department</p>
     </footer>
 
-    <!-- Bootstrap 5 JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    
     <!-- Dark Mode Toggle Script -->
     <script>
         function toggleDarkMode() {
@@ -131,6 +79,15 @@
                 icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
             }
         }
+        
+        // Initialize dark mode icon
+        document.addEventListener('DOMContentLoaded', function() {
+            const icon = document.getElementById('darkModeIcon');
+            if (icon) {
+                const isDark = document.documentElement.classList.contains('dark-mode');
+                icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+            }
+        });
     </script>
     
     {% block extra_js %}{% endblock %}
