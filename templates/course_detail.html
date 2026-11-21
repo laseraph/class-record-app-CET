@@ -212,7 +212,7 @@
                 <div style="font-size: 20px; font-weight: 800; color: var(--hcdc-primary);">{{ grade }}</div>
                 <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">{{ count }} students</div>
                 <div class="progress-container" style="margin-top: 8px;">
-                    <div class="progress-bar" style="width: {{ (count/total*100)|int }}%"></div>
+                    <div class="progress-bar" style="width: {% if total > 0 %}{{ (count/total*100)|int }}%{% else %}0%{% endif %}"></div>
                 </div>
             </div>
         </div>
