@@ -125,7 +125,7 @@
                 </div>
             </div>
             <div style="display: flex; gap: 4px;">
-                <button class="btn btn-secondary" style="font-size: 10px; padding: 4px 8px;" onclick="editInstance({{ inst.id }})">
+                <button class="btn btn-secondary" style="font-size: 10px; padding: 4px 8px;" onclick="showEditInstanceModal({{ inst.id }}, '{{ inst.title }}', '{{ inst.period }}', {{ inst.instance_number }}, {{ inst.max_score }}, {{ inst.weight_fraction }})">
                     <i class="bi bi-pencil"></i> Edit
                 </button>
                 <form method="POST" style="margin: 0;">
@@ -254,6 +254,60 @@
     </div>
 </div>
 
+<!-- Edit Instance Modal -->
+<div class="modal-overlay" id="editInstanceModal" style="display: none;">
+    <div class="modal">
+        <button class="modal-close" onclick="document.getElementById('editInstanceModal').style.display='none'">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <div class="modal-header">
+            <h2><i class="bi bi-pencil"></i> Edit Instance</h2>
+        </div>
+        <div class="modal-body">
+            <form method="POST">
+                <input type="hidden" name="action" value="update_instance">
+                <input type="hidden" name="instance_id" id="editInstanceId">
+                <div class="form-group">
+                    <label>Title <span style="color: var(--hcdc-secondary);">*</span></label>
+                    <input type="text" name="title" id="editInstanceTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Period <span style="color: var(--hcdc-secondary);">*</span></label>
+                    <select name="period" id="editInstancePeriod" required>
+                        <option value="prelim_mid">Prelim-Mid</option>
+                        <option value="semis_final">Semis-Final</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Instance Number <span style="color: var(--hcdc-secondary);">*</span></label>
+                        <input type="number" name="instance_number" id="editInstanceNumber" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Score <span style="color: var(--hcdc-secondary);">*</span></label>
+                        <input type="number" name="max_score" id="editInstanceMaxScore" step="0.1" min="0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Weight Fraction <span style="color: var(--hcdc-secondary);">*</span></label>
+                    <input type="number" name="weight_fraction" id="editInstanceWeightFraction" step="0.01" min="0" max="1" required>
+                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
+                        Fraction of component weight (e.g., 0.2 = 20% of component)
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('editInstanceModal').style.display='none'">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function showAddComponentModal() {
         document.getElementById('addComponentModal').style.display = 'flex';
@@ -265,8 +319,19 @@
         document.getElementById('addInstanceModal').style.display = 'flex';
     }
     
+    function showEditInstanceModal(instanceId, title, period, instanceNumber, maxScore, weightFraction) {
+        document.getElementById('editInstanceId').value = instanceId;
+        document.getElementById('editInstanceTitle').value = title;
+        document.getElementById('editInstancePeriod').value = period;
+        document.getElementById('editInstanceNumber').value = instanceNumber;
+        document.getElementById('editInstanceMaxScore').value = maxScore;
+        document.getElementById('editInstanceWeightFraction').value = weightFraction;
+        document.getElementById('editInstanceModal').style.display = 'flex';
+    }
+    
     function editInstance(instanceId) {
-        alert('Edit instance ' + instanceId + ' - Feature coming soon!');
+        // This function is no longer used, but kept for backward compatibility
+        showEditInstanceModal(instanceId, '', 'prelim_mid', 1, 100, 1.0);
     }
 </script>
 {% endblock %}

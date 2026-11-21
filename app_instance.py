@@ -263,56 +263,10 @@ def insert_dummy_data(db):
     
     db.commit()
     
-    # Sample scores from user data
-    prelim_scores = {
-        'Assignment 1': 85.0, 'Assignment 2': 90.0, 'Assignment 3': 88.0,
-        'Assignment 4': 75.0, 'Assignment 5': 82.0,
-        'Recitation 1': 90.0, 'Recitation 2': 85.0, 'Recitation 3': 92.0,
-        'Recitation 4': 88.0, 'Recitation 5': 90.0,
-        'Seatwork 1': 45.0, 'Seatwork 2': 48.0, 'Seatwork 3': 44.0,
-        'Seatwork 4': 40.0, 'Seatwork 5': 46.0,
-        'Quiz 1': 75.0, 'Quiz 2': 80.0, 'Quiz 3': 65.0,
-        'Prelim Exam': 65.0,
-    }
-    
-    semis_scores = {
-        'Assignment 6': 90.0, 'Assignment 7': 85.0, 'Assignment 8': 92.0,
-        'Assignment 9': 80.0, 'Assignment 10': 88.0,
-        'Recitation 6': 85.0, 'Recitation 7': 90.0, 'Recitation 8': 88.0,
-        'Recitation 9': 85.0, 'Recitation 10': 92.0,
-        'Seatwork 6': 48.0, 'Seatwork 7': 45.0, 'Seatwork 8': 50.0,
-        'Seatwork 9': 42.0, 'Seatwork 10': 47.0,
-        'Quiz 4': 80.0, 'Quiz 5': 85.0, 'Quiz 6': 70.0,
-        'Midterm Exam': 70.0,
-    }
-    
-    # Insert scores for all students
-    cursor.execute('SELECT id, title FROM component_instances WHERE course_id = ?', (course_id,))
-    instances = cursor.fetchall()
-    
-    for student_idx, student_id in enumerate(student_ids):
-        for instance_id, title in instances:
-            if title in prelim_scores:
-                base = prelim_scores[title]
-            elif title in semis_scores:
-                base = semis_scores[title]
-            else:
-                base = 80.0
-            
-            # Add variation per student for testing
-            variation = (student_idx * 2) - 2  # Small variation
-            score = max(0, min(100, base + variation))
-            
-            cursor.execute('''
-                INSERT INTO scores (course_id, student_id, instance_id, score)
-                VALUES (?, ?, ?, ?)
-            ''', (course_id, student_id, instance_id, score))
-    
-    db.commit()
-    
-    # Calculate grades
-    for student_id in student_ids:
-        calculate_student_grade(course_id, student_id)
+    # Note: Scores are NOT inserted by default to allow users to enter their own data
+    # Users can either:
+    # 1. Manually enter grades through the grade entry page
+    # 2. Import their existing grade sheet using the import feature
     
     db.commit()
     print("Dummy data inserted successfully!")
@@ -794,14 +748,34 @@ def grading_criteria(course_id):
         
         elif action == 'update_instance':
             instance_id = request.form.get('instance_id')
-            title = request.form.get(f'title_{instance_id}')
-            max_score = float(request.form.get(f'max_score_{instance_id}', 100))
-            weight_fraction = float(request.form.get(f'weight_fraction_{instance_id}', 1.0))
             
-            cursor.execute('''
-                UPDATE component_instances SET title = ?, max_score = ?, weight_fraction = ?
-                WHERE id = ?
-            ''', (title, max_score, weight_fraction, instance_id))
+            # Handle both old inline format and new modal format
+            if instance_id:
+                # New modal format: direct field names
+                title = request.form.get('title')
+                period = request.form.get('period')
+                instance_number = int(request.form.get('instance_number'))
+                max_score = float(request.form.get('max_score', 100))
+                weight_fraction = float(request.form.get('weight_fraction', 1.0))
+                
+                cursor.execute('''
+                    UPDATE component_instances 
+                    SET title = ?, period = ?, instance_number = ?, max_score = ?, weight_fraction = ?
+                    WHERE id = ?
+                ''', (title, period, instance_number, max_score, weight_fraction, instance_id))
+            else:
+                # Old inline format: title_{instance_id}, etc.
+                for key in request.form.keys():
+                    if key.startswith('title_'):
+                        instance_id = key.replace('title_', '')
+                        title = request.form.get(key)
+                        max_score = float(request.form.get(f'max_score_{instance_id}', 100))
+                        weight_fraction = float(request.form.get(f'weight_fraction_{instance_id}', 1.0))
+                        
+                        cursor.execute('''
+                            UPDATE component_instances SET title = ?, max_score = ?, weight_fraction = ?
+                            WHERE id = ?
+                        ''', (title, max_score, weight_fraction, instance_id))
             db.commit()
             recalculate_all_grades(course_id)
             flash('Instance updated!', 'success')
