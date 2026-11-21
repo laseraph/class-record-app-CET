@@ -2126,12 +2126,63 @@ def import_grades():
                 # Get all sheet names (each sheet is a course)
                 sheet_names = xls.sheet_names
                 
-                # Process each sheet (course)
+                # Filter sheets to only include valid course sheets
+                # Skip summary sheets, master lists, etc.
+                valid_sheets = []
+                skipped_sheets = []
+                
+                for sheet_name in sheet_names:
+                    sheet_lower = sheet_name.strip().lower()
+                    
+                    # Skip sheets that look like summaries or non-course sheets
+                    skip_patterns = [
+                        'summary', 'master', 'list', 'grade sheet', 'gradesheet',
+                        'cover', 'table of contents', 'toc', 'index', 'legend',
+                        'instructions', 'guide', 'how to', 'template',
+                        'sheet1', 'sheet2', 'sheet3',  # Generic sheet names
+                    ]
+                    
+                    is_summary = any(pattern in sheet_lower for pattern in skip_patterns)
+                    
+                    # Check if sheet name contains course-like identifiers
+                    # Look for: course codes (CS101, MATH202), course names, section info
+                    has_course_info = any(
+                        pattern in sheet_lower 
+                        for pattern in ['electronic', 'programming', 'calculus', 'physics', 'chemistry',
+                                       'cs', 'ce', 'ee', 'me', 'it', 'math', 'eng', 'ph', 'chem',
+                                       '1st', '2nd', '1st sem', '2nd sem', 'semester',
+                                       'section', 'sec ', '-1', '-2', ' (']
+                    )
+                    
+                    # Also accept if it looks like a course code (letters + numbers)
+                    import re
+                    has_course_code = bool(re.search(r'^[a-z]{2,4}\d{2,4}$', sheet_name.strip(), re.IGNORECASE))
+                    
+                    if is_summary and not has_course_info and not has_course_code:
+                        skipped_sheets.append(sheet_name)
+                        continue
+                    
+                    valid_sheets.append(sheet_name)
+                
+                # If no valid sheets found, show error
+                if not valid_sheets:
+                    error_msg = 'Error: No valid course sheets found.'
+                    if skipped_sheets:
+                        error_msg += f' Skipped sheets: {", ".join(skipped_sheets)}. '
+                        error_msg += 'Please upload a file with course grading sheets (e.g., "Electronics 1", "CS101").'
+                    flash(error_msg, 'error')
+                    return redirect(url_for('import_grades'))
+                
+                # Show which sheets will be processed
+                if skipped_sheets:
+                    flash(f'Processing {len(valid_sheets)} course sheets. Skipped: {", ".join(skipped_sheets)}', 'info')
+                
+                # Process each valid sheet (course)
                 imported_courses = 0
                 imported_students = 0
                 imported_grades = 0
                 
-                for sheet_name in sheet_names:
+                for sheet_name in valid_sheets:
                     # Try to parse course info from sheet name
                     # Common format: "CourseCode - CourseTitle" or "CourseTitle (CourseCode)"
                     course_code = sheet_name.split(' - ')[0] if ' - ' in sheet_name else sheet_name.split('(')[0].strip()
