@@ -183,14 +183,16 @@ def insert_dummy_data(db):
         cursor.execute('INSERT INTO course_students (course_id, student_id) VALUES (?, ?)',
                      (course_id, student_id))
     
-    # Grading components
+    # Grading components - Correct structure per user requirements
+    # Each bigrade = 50% (Class Standing 25% + Major Exam 25%)
+    # Total: Assignments 20% + Quizzes 20% + Oral Recitation 5% + Seatwork 5% + Pre/Semi 25% + Mid/Fin 25% = 100%
     components = [
-        ('Assignments', 'class_standing', 10.0, 10.0, 100.0),
-        ('Oral Recitation', 'class_standing', 5.0, 5.0, 100.0),
-        ('Seatwork', 'class_standing', 5.0, 5.0, 50.0),
-        ('Quizzes', 'class_standing', 30.0, 30.0, 100.0),
-        ('Pre / Semi exam', 'major_exam', 25.0, 0.0, 100.0),
-        ('Mid / Fin exam', 'major_exam', 0.0, 25.0, 100.0),
+        ('Assignments', 'class_standing', 10.0, 10.0, 100.0),   # 20% total
+        ('Quizzes', 'class_standing', 10.0, 10.0, 100.0),      # 20% total
+        ('Oral Recitation', 'class_standing', 2.5, 2.5, 100.0), # 5% total
+        ('Seatwork', 'class_standing', 2.5, 2.5, 50.0),        # 5% total
+        ('Pre / Semi exam', 'major_exam', 25.0, 0.0, 100.0),    # 25% total
+        ('Mid / Fin exam', 'major_exam', 0.0, 25.0, 100.0),    # 25% total
     ]
     
     comp_ids = {}
