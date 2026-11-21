@@ -858,6 +858,7 @@ def add_students_to_course(course_id):
                 
                 imported = 0
                 # Find column indices for student data
+                # Look for EXACT column names first (HCDC standard format)
                 ln_col = None
                 fn_col = None
                 id_col = None
@@ -865,17 +866,37 @@ def add_students_to_course(course_id):
                 
                 for col in df.columns:
                     col_name = str(col).strip().lower()
-                    if 'last' in col_name or col_name in ['lastname', 'surname']:
+                    col_name_original = str(col).strip()
+                    
+                    # EXACT MATCHES - HCDC Standard Column Names
+                    if col_name == 'last name' or col_name_original == 'LAST NAME':
                         ln_col = col
-                    elif 'first' in col_name or col_name in ['firstname', 'given name']:
+                    elif col_name == 'first name' or col_name_original == 'FIRST NAME':
                         fn_col = col
-                    elif 'name' in col_name or 'student' in col_name:
-                        # If we haven't found specific name columns, use this as full name
-                        if ln_col is None and fn_col is None:
-                            ln_col = col  # Will handle splitting later
-                    elif 'id' in col_name or 'number' in col_name or col_name in ['id no', 'id no.']:
+                    elif col_name == 'id number' or col_name_original == 'ID NUMBER':
                         id_col = col
-                    elif 'email' in col_name:
+                    elif col_name == 'email address' or col_name_original == 'EMAIL ADDRESS':
+                        email_col = col
+                    # Alternative common formats
+                    elif col_name == 'lastname' or col_name == 'surname':
+                        if ln_col is None:
+                            ln_col = col
+                    elif col_name == 'firstname' or col_name == 'given name':
+                        if fn_col is None:
+                            fn_col = col
+                    elif col_name in ['id no', 'id no.', 'id#'] or col_name_original in ['ID NO', 'ID NO.']:
+                        if id_col is None:
+                            id_col = col
+                    # Fallback: Pattern matching (less reliable)
+                    elif 'last' in col_name and 'name' in col_name:
+                        if ln_col is None:
+                            ln_col = col
+                    elif 'first' in col_name and 'name' in col_name:
+                        if fn_col is None:
+                            fn_col = col
+                    elif ('id' in col_name or 'number' in col_name) and id_col is None:
+                        id_col = col
+                    elif 'email' in col_name and email_col is None:
                         email_col = col
                 
                 for _, row in df.iterrows():
@@ -2224,28 +2245,45 @@ def import_grades():
                         course_id = course['id']
                     
                     # Find student data columns
-                    # Look for columns with student names, ID numbers
-                    # HCDC format typically has: No., Last Name, First Name, MI, ID Number, etc.
+                    # Look for EXACT column names first (HCDC standard format)
+                    # Priority 1: Exact matches (case-insensitive)
                     student_cols = {}
                     for col in df.columns:
                         col_name = str(col).strip().lower()
+                        col_name_original = str(col).strip()
+                        
                         # Skip grade columns (prelim, mid, semis, final, avg, grade, etc.)
                         if any(x in col_name for x in ['prelim', 'mid', 'semis', 'final', 'avg', 'grade', 'score', 'exam', 'quiz', 'assignment', 'seatwork', 'oral', 'project']):
                             continue
-                        if any(x in col_name for x in ['genavg', 'gen avg', 'general average']):
+                        if any(x in col_name for x in ['genavg', 'gen avg', 'general average', 'gen. avg']):
                             continue
                         
-                        if 'last' in col_name or col_name in ['lastname', 'surname']:
+                        # EXACT MATCHES - HCDC Standard Column Names
+                        if col_name == 'last name' or col_name_original == 'LAST NAME':
                             student_cols['last_name'] = col
-                        elif 'first' in col_name or col_name in ['firstname', 'given name']:
+                        elif col_name == 'first name' or col_name_original == 'FIRST NAME':
                             student_cols['first_name'] = col
-                        elif 'name' in col_name or 'student' in col_name:
-                            # Full name column - try to detect if it's a name column
-                            if col_name not in ['name', 'student name', 'name of student', 'students']:
-                                continue
-                            student_cols['full_name'] = col
-                        elif 'id' in col_name or 'number' in col_name or col_name in ['id no', 'id no.']:
+                        elif col_name == 'id number' or col_name_original == 'ID NUMBER':
                             student_cols['id_number'] = col
+                        elif col_name == 'email address' or col_name_original == 'EMAIL ADDRESS':
+                            student_cols['email'] = col
+                        # Alternative common formats
+                        elif col_name == 'lastname' or col_name == 'surname':
+                            student_cols['last_name'] = col
+                        elif col_name == 'firstname' or col_name == 'given name':
+                            student_cols['first_name'] = col
+                        elif col_name in ['id no', 'id no.', 'id#'] or col_name_original in ['ID NO', 'ID NO.']:
+                            student_cols['id_number'] = col
+                        # Fallback: Pattern matching (less reliable)
+                        elif 'last' in col_name and 'name' in col_name:
+                            if 'last_name' not in student_cols:
+                                student_cols['last_name'] = col
+                        elif 'first' in col_name and 'name' in col_name:
+                            if 'first_name' not in student_cols:
+                                student_cols['first_name'] = col
+                        elif ('id' in col_name or 'number' in col_name) and 'student_cols' not in student_cols:
+                            if 'id_number' not in student_cols:
+                                student_cols['id_number'] = col
                         elif 'email' in col_name:
                             student_cols['email'] = col
                     
