@@ -463,11 +463,16 @@ def dashboard():
     
     overall_pass_rate = (total_passed / total_students * 100) if total_students > 0 else 0
     
+    # Count total instances
+    cursor.execute('SELECT COUNT(*) FROM component_instances')
+    total_instances = cursor.fetchone()[0]
+    
     return render_template('dashboard.html', 
                          courses=course_list,
                          total_courses=len(courses),
                          total_students=total_students,
-                         overall_pass_rate=round(overall_pass_rate, 1))
+                         overall_pass_rate=round(overall_pass_rate, 1),
+                         total_instances=total_instances)
 
 
 @app.route('/course/<int:course_id>')
