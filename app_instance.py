@@ -2204,10 +2204,18 @@ def import_grades():
                 imported_grades = 0
                 
                 for sheet_name in valid_sheets:
-                    # Try to parse course info from sheet name
+                    # Use the full sheet name as course_code to keep sections separate
+                    # This ensures "Electronics 1 - CpE 2A" and "Electronics 1 - CpE 2B" are treated as different courses
+                    course_code = sheet_name.strip()
+                    
+                    # Try to parse course title from sheet name
                     # Common format: "CourseCode - CourseTitle" or "CourseTitle (CourseCode)"
-                    course_code = sheet_name.split(' - ')[0] if ' - ' in sheet_name else sheet_name.split('(')[0].strip()
-                    course_title = sheet_name.split(' - ')[1] if ' - ' in sheet_name else sheet_name.split('(')[0].strip()
+                    if ' - ' in sheet_name:
+                        course_title = sheet_name.split(' - ', 1)[1].strip()
+                    elif '(' in sheet_name:
+                        course_title = sheet_name.split('(', 1)[0].strip()
+                    else:
+                        course_title = sheet_name.strip()
                     
                     # Read the sheet WITHOUT header to handle merged cells
                     # This is critical for HCDC Class Record files which use merged cells
