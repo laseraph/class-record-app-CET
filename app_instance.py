@@ -185,16 +185,40 @@ def insert_dummy_data(db):
         cursor.execute('INSERT INTO course_students (course_id, student_id) VALUES (?, ?)',
                      (course_id, student_id))
     
-    # Grading components - Correct structure per user requirements
-    # Each bigrade = 50% (Class Standing 25% + Major Exam 25%)
-    # Total: Assignments 20% + Quizzes 20% + Oral Recitation 5% + Seatwork 5% + Pre/Semi 25% + Mid/Fin 25% = 100%
+    # Grading components - NEW structure per user requirements
+    # Each bigrade = 50% of final grade
+    # Within each bigrade: 50% class standing + 50% for TWO major exams (25% each)
+    # 
+    # Prelim-Mid (50% of final):
+    #   - Class Standing: 50% of bigrade = 25% of final
+    #     - Assignments: 20% of bigrade = 10% of final
+    #     - Quizzes: 20% of bigrade = 10% of final
+    #     - Oral Recitation: 5% of bigrade = 2.5% of final
+    #     - Seatwork: 5% of bigrade = 2.5% of final
+    #   - Major Exams: 50% of bigrade = 25% of final
+    #     - Prelim Exam: 25% of bigrade = 12.5% of final
+    #     - Midterm Exam: 25% of bigrade = 12.5% of final
+    #
+    # Semis-Final (50% of final):
+    #   - Class Standing: 50% of bigrade = 25% of final
+    #     - Assignments: 20% of bigrade = 10% of final
+    #     - Quizzes: 20% of bigrade = 10% of final
+    #     - Oral Recitation: 5% of bigrade = 2.5% of final
+    #     - Seatwork: 5% of bigrade = 2.5% of final
+    #   - Major Exams: 50% of bigrade = 25% of final
+    #     - Semi-Final Exam: 25% of bigrade = 12.5% of final
+    #     - Final Exam: 25% of bigrade = 12.5% of final
+    #
+    # Total: 25+12.5+12.5 + 25+12.5+12.5 = 100%
     components = [
-        ('Assignments', 'class_standing', 10.0, 10.0, 100.0),   # 20% total
-        ('Quizzes', 'class_standing', 10.0, 10.0, 100.0),      # 20% total
-        ('Oral Recitation', 'class_standing', 2.5, 2.5, 100.0), # 5% total
-        ('Seatwork', 'class_standing', 2.5, 2.5, 50.0),        # 5% total
-        ('Pre / Semi exam', 'major_exam', 25.0, 0.0, 100.0),    # 25% total
-        ('Mid / Fin exam', 'major_exam', 0.0, 25.0, 100.0),    # 25% total
+        ('Assignments', 'class_standing', 10.0, 10.0, 100.0),   # 20% of bigrade = 10% of final
+        ('Quizzes', 'class_standing', 10.0, 10.0, 100.0),      # 20% of bigrade = 10% of final
+        ('Oral Recitation', 'class_standing', 2.5, 2.5, 100.0), # 5% of bigrade = 2.5% of final
+        ('Seatwork', 'class_standing', 2.5, 2.5, 100.0),        # 5% of bigrade = 2.5% of final
+        ('Prelim Exam', 'major_exam', 12.5, 0.0, 100.0),        # 25% of bigrade = 12.5% of final
+        ('Midterm Exam', 'major_exam', 12.5, 0.0, 100.0),       # 25% of bigrade = 12.5% of final
+        ('Semi-Final Exam', 'major_exam', 0.0, 12.5, 100.0),    # 25% of bigrade = 12.5% of final
+        ('Final Exam', 'major_exam', 0.0, 12.5, 100.0),         # 25% of bigrade = 12.5% of final
     ]
     
     comp_ids = {}
@@ -206,26 +230,26 @@ def insert_dummy_data(db):
         comp_ids[name] = cursor.lastrowid
     
     # Component instances - Prelim-Mid
+    # Class Standing: 5 instances each, weight_fraction distributes 20% for Assignments, 20% for Quizzes, 5% for Oral, 5% for Seatwork
     prelim_instances = [
-        ('Assignments', 1, 'Assignment 1', 100.0, 0.2),
-        ('Assignments', 2, 'Assignment 2', 100.0, 0.2),
-        ('Assignments', 3, 'Assignment 3', 100.0, 0.2),
-        ('Assignments', 4, 'Assignment 4', 100.0, 0.2),
-        ('Assignments', 5, 'Assignment 5', 100.0, 0.2),
-        ('Oral Recitation', 1, 'Recitation 1', 100.0, 0.2),
-        ('Oral Recitation', 2, 'Recitation 2', 100.0, 0.2),
-        ('Oral Recitation', 3, 'Recitation 3', 100.0, 0.2),
-        ('Oral Recitation', 4, 'Recitation 4', 100.0, 0.2),
-        ('Oral Recitation', 5, 'Recitation 5', 100.0, 0.2),
-        ('Seatwork', 1, 'Seatwork 1', 50.0, 0.2),
-        ('Seatwork', 2, 'Seatwork 2', 50.0, 0.2),
-        ('Seatwork', 3, 'Seatwork 3', 50.0, 0.2),
-        ('Seatwork', 4, 'Seatwork 4', 50.0, 0.2),
-        ('Seatwork', 5, 'Seatwork 5', 50.0, 0.2),
-        ('Quizzes', 1, 'Quiz 1', 100.0, 1/3),
-        ('Quizzes', 2, 'Quiz 2', 100.0, 1/3),
-        ('Quizzes', 3, 'Quiz 3', 100.0, 1/3),
-        ('Pre / Semi exam', 1, 'Prelim Exam', 100.0, 1.0),
+        # Assignments (20% of bigrade = 10% of final)
+        ('Assignments', 1, 'Assignment 1', 100.0, 0.25),
+        ('Assignments', 2, 'Assignment 2', 100.0, 0.25),
+        ('Assignments', 3, 'Assignment 3', 100.0, 0.25),
+        ('Assignments', 4, 'Assignment 4', 100.0, 0.25),
+        # Quizzes (20% of bigrade = 10% of final)
+        ('Quizzes', 1, 'Quiz 1', 100.0, 0.333),
+        ('Quizzes', 2, 'Quiz 2', 100.0, 0.333),
+        ('Quizzes', 3, 'Quiz 3', 100.0, 0.334),
+        # Oral Recitation (5% of bigrade = 2.5% of final)
+        ('Oral Recitation', 1, 'Recitation 1', 100.0, 0.5),
+        ('Oral Recitation', 2, 'Recitation 2', 100.0, 0.5),
+        # Seatwork (5% of bigrade = 2.5% of final)
+        ('Seatwork', 1, 'Seatwork 1', 50.0, 0.5),
+        ('Seatwork', 2, 'Seatwork 2', 50.0, 0.5),
+        # Major Exams (25% each of bigrade = 12.5% each of final)
+        ('Prelim Exam', 1, 'Prelim Exam', 100.0, 1.0),
+        ('Midterm Exam', 1, 'Midterm Exam', 100.0, 1.0),
     ]
     
     for comp_name, inst_num, title, max_score, weight_fraction in prelim_instances:
@@ -237,25 +261,24 @@ def insert_dummy_data(db):
     
     # Component instances - Semis-Final
     semis_instances = [
-        ('Assignments', 1, 'Assignment 6', 100.0, 0.2),
-        ('Assignments', 2, 'Assignment 7', 100.0, 0.2),
-        ('Assignments', 3, 'Assignment 8', 100.0, 0.2),
-        ('Assignments', 4, 'Assignment 9', 100.0, 0.2),
-        ('Assignments', 5, 'Assignment 10', 100.0, 0.2),
-        ('Oral Recitation', 1, 'Recitation 6', 100.0, 0.2),
-        ('Oral Recitation', 2, 'Recitation 7', 100.0, 0.2),
-        ('Oral Recitation', 3, 'Recitation 8', 100.0, 0.2),
-        ('Oral Recitation', 4, 'Recitation 9', 100.0, 0.2),
-        ('Oral Recitation', 5, 'Recitation 10', 100.0, 0.2),
-        ('Seatwork', 1, 'Seatwork 6', 50.0, 0.2),
-        ('Seatwork', 2, 'Seatwork 7', 50.0, 0.2),
-        ('Seatwork', 3, 'Seatwork 8', 50.0, 0.2),
-        ('Seatwork', 4, 'Seatwork 9', 50.0, 0.2),
-        ('Seatwork', 5, 'Seatwork 10', 50.0, 0.2),
-        ('Quizzes', 1, 'Quiz 4', 100.0, 1/3),
-        ('Quizzes', 2, 'Quiz 5', 100.0, 1/3),
-        ('Quizzes', 3, 'Quiz 6', 100.0, 1/3),
-        ('Mid / Fin exam', 1, 'Midterm Exam', 100.0, 1.0),
+        # Assignments (20% of bigrade = 10% of final)
+        ('Assignments', 1, 'Assignment 5', 100.0, 0.25),
+        ('Assignments', 2, 'Assignment 6', 100.0, 0.25),
+        ('Assignments', 3, 'Assignment 7', 100.0, 0.25),
+        ('Assignments', 4, 'Assignment 8', 100.0, 0.25),
+        # Quizzes (20% of bigrade = 10% of final)
+        ('Quizzes', 1, 'Quiz 4', 100.0, 0.333),
+        ('Quizzes', 2, 'Quiz 5', 100.0, 0.333),
+        ('Quizzes', 3, 'Quiz 6', 100.0, 0.334),
+        # Oral Recitation (5% of bigrade = 2.5% of final)
+        ('Oral Recitation', 1, 'Recitation 3', 100.0, 0.5),
+        ('Oral Recitation', 2, 'Recitation 4', 100.0, 0.5),
+        # Seatwork (5% of bigrade = 2.5% of final)
+        ('Seatwork', 1, 'Seatwork 3', 50.0, 0.5),
+        ('Seatwork', 2, 'Seatwork 4', 50.0, 0.5),
+        # Major Exams (25% each of bigrade = 12.5% each of final)
+        ('Semi-Final Exam', 1, 'Semi-Final Exam', 100.0, 1.0),
+        ('Final Exam', 1, 'Final Exam', 100.0, 1.0),
     ]
     
     for comp_name, inst_num, title, max_score, weight_fraction in semis_instances:
@@ -916,14 +939,34 @@ def add_course():
         course_id = cursor.lastrowid
         db.commit()
         
-        # Add default grading components
+        # Add default grading components - NEW structure per user requirements
+        # Each bigrade = 50% of final grade
+        # Within each bigrade: 50% class standing + 50% for TWO major exams (25% each)
+        #
+        # Prelim-Mid (50% of final):
+        #   - Class Standing: 50% of bigrade = 25% of final
+        #     - Assignments: 20% of bigrade = 10% of final
+        #     - Quizzes: 20% of bigrade = 10% of final
+        #     - Oral Recitation: 5% of bigrade = 2.5% of final
+        #     - Seatwork: 5% of bigrade = 2.5% of final
+        #   - Major Exams: 50% of bigrade = 25% of final
+        #     - Prelim Exam: 25% of bigrade = 12.5% of final
+        #     - Midterm Exam: 25% of bigrade = 12.5% of final
+        #
+        # Semis-Final (50% of final):
+        #   - Class Standing: 50% of bigrade = 25% of final
+        #   - Major Exams: 50% of bigrade = 25% of final
+        #     - Semi-Final Exam: 25% of bigrade = 12.5% of final
+        #     - Final Exam: 25% of bigrade = 12.5% of final
         components = [
-            ('Assignments', 'class_standing', 10.0, 10.0, 100.0),
-            ('Oral Recitation', 'class_standing', 5.0, 5.0, 100.0),
-            ('Seatwork', 'class_standing', 5.0, 5.0, 50.0),
-            ('Quizzes', 'class_standing', 30.0, 30.0, 100.0),
-            ('Pre / Semi exam', 'major_exam', 25.0, 0.0, 100.0),
-            ('Mid / Fin exam', 'major_exam', 0.0, 25.0, 100.0),
+            ('Assignments', 'class_standing', 10.0, 10.0, 100.0),   # 20% of bigrade = 10% of final
+            ('Quizzes', 'class_standing', 10.0, 10.0, 100.0),      # 20% of bigrade = 10% of final
+            ('Oral Recitation', 'class_standing', 2.5, 2.5, 100.0), # 5% of bigrade = 2.5% of final
+            ('Seatwork', 'class_standing', 2.5, 2.5, 100.0),        # 5% of bigrade = 2.5% of final
+            ('Prelim Exam', 'major_exam', 12.5, 0.0, 100.0),        # 25% of bigrade = 12.5% of final
+            ('Midterm Exam', 'major_exam', 12.5, 0.0, 100.0),       # 25% of bigrade = 12.5% of final
+            ('Semi-Final Exam', 'major_exam', 0.0, 12.5, 100.0),    # 25% of bigrade = 12.5% of final
+            ('Final Exam', 'major_exam', 0.0, 12.5, 100.0),         # 25% of bigrade = 12.5% of final
         ]
         
         for name, category, prelim, semis, max_score in components:
@@ -933,40 +976,21 @@ def add_course():
             ''', (course_id, name, category, prelim, semis, max_score))
             comp_id = cursor.lastrowid
             
+            # Create instances for each component
             if name == 'Assignments':
-                for i in range(1, 6):
+                # 4 assignments for Prelim-Mid, 4 for Semis-Final
+                for i in range(1, 5):
                     cursor.execute('''
                         INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
                         VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ''', (comp_id, course_id, i, f'Assignment {i}', 100.0, 0.2, 'prelim_mid'))
+                    ''', (comp_id, course_id, i, f'Assignment {i}', 100.0, 0.25, 'prelim_mid'))
                     cursor.execute('''
                         INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
                         VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ''', (comp_id, course_id, i, f'Assignment {i+5}', 100.0, 0.2, 'semis_final'))
-            
-            elif name == 'Oral Recitation':
-                for i in range(1, 6):
-                    cursor.execute('''
-                        INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ''', (comp_id, course_id, i, f'Recitation {i}', 100.0, 0.2, 'prelim_mid'))
-                    cursor.execute('''
-                        INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ''', (comp_id, course_id, i, f'Recitation {i+5}', 100.0, 0.2, 'semis_final'))
-            
-            elif name == 'Seatwork':
-                for i in range(1, 6):
-                    cursor.execute('''
-                        INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ''', (comp_id, course_id, i, f'Seatwork {i}', 50.0, 0.2, 'prelim_mid'))
-                    cursor.execute('''
-                        INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ''', (comp_id, course_id, i, f'Seatwork {i+5}', 50.0, 0.2, 'semis_final'))
+                    ''', (comp_id, course_id, i, f'Assignment {i+4}', 100.0, 0.25, 'semis_final'))
             
             elif name == 'Quizzes':
+                # 3 quizzes for Prelim-Mid, 3 for Semis-Final
                 for i in range(1, 4):
                     cursor.execute('''
                         INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
@@ -977,17 +1001,53 @@ def add_course():
                         VALUES (?, ?, ?, ?, ?, ?, ?)
                     ''', (comp_id, course_id, i, f'Quiz {i+3}', 100.0, 1/3, 'semis_final'))
             
-            elif name == 'Pre / Semi exam':
+            elif name == 'Oral Recitation':
+                # 2 recitations for Prelim-Mid, 2 for Semis-Final
+                for i in range(1, 3):
+                    cursor.execute('''
+                        INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ''', (comp_id, course_id, i, f'Recitation {i}', 100.0, 0.5, 'prelim_mid'))
+                    cursor.execute('''
+                        INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ''', (comp_id, course_id, i, f'Recitation {i+2}', 100.0, 0.5, 'semis_final'))
+            
+            elif name == 'Seatwork':
+                # 2 seatworks for Prelim-Mid, 2 for Semis-Final
+                for i in range(1, 3):
+                    cursor.execute('''
+                        INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ''', (comp_id, course_id, i, f'Seatwork {i}', 100.0, 0.5, 'prelim_mid'))
+                    cursor.execute('''
+                        INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ''', (comp_id, course_id, i, f'Seatwork {i+2}', 100.0, 0.5, 'semis_final'))
+            
+            elif name == 'Prelim Exam':
                 cursor.execute('''
                     INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 ''', (comp_id, course_id, 1, 'Prelim Exam', 100.0, 1.0, 'prelim_mid'))
             
-            elif name == 'Mid / Fin exam':
+            elif name == 'Midterm Exam':
                 cursor.execute('''
                     INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (comp_id, course_id, 1, 'Midterm Exam', 100.0, 1.0, 'semis_final'))
+                ''', (comp_id, course_id, 1, 'Midterm Exam', 100.0, 1.0, 'prelim_mid'))
+            
+            elif name == 'Semi-Final Exam':
+                cursor.execute('''
+                    INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (comp_id, course_id, 1, 'Semi-Final Exam', 100.0, 1.0, 'semis_final'))
+            
+            elif name == 'Final Exam':
+                cursor.execute('''
+                    INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (comp_id, course_id, 1, 'Final Exam', 100.0, 1.0, 'semis_final'))
         
         db.commit()
         flash('Course added successfully!', 'success')
