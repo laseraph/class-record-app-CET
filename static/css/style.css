@@ -284,6 +284,10 @@ html.dark-mode h6 {
     margin-bottom: 18px;
 }
 
+.notice strong {
+    color: var(--ink);
+}
+
 .notice p {
     margin: 0;
 }
@@ -315,16 +319,32 @@ html.dark-mode .notice {
     color: var(--ink);
 }
 
+html.dark-mode .notice strong {
+    color: var(--ink) !important;
+}
+
 html.dark-mode .notice.success {
-    color: var(--text-on-ok, #ffffff);
+    color: #ffffff !important;
+    background: var(--ok-bg) !important;
+    border-color: var(--ok-border) !important;
 }
 
 html.dark-mode .notice.error {
-    color: var(--text-on-bad, #ffffff);
+    color: #ffffff !important;
+    background: var(--bad-bg) !important;
+    border-color: var(--bad-border) !important;
 }
 
 html.dark-mode .notice.info {
-    color: var(--text-on-warn, #ffffff);
+    color: #ffffff !important;
+    background: var(--hcdc-primary-dark) !important;
+    border-color: var(--hcdc-primary) !important;
+}
+
+html.dark-mode .notice.warning {
+    color: #ffffff !important;
+    background: var(--warn-bg) !important;
+    border-color: var(--warn-border) !important;
 }
 
 /* Form Styles */

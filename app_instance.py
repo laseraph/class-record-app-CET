@@ -2209,8 +2209,66 @@ def import_grades():
                     course_code = sheet_name.split(' - ')[0] if ' - ' in sheet_name else sheet_name.split('(')[0].strip()
                     course_title = sheet_name.split(' - ')[1] if ' - ' in sheet_name else sheet_name.split('(')[0].strip()
                     
-                    # Read the sheet
-                    df = pd.read_excel(file, sheet_name=sheet_name)
+                    # Read the sheet WITHOUT header to handle merged cells
+                    # This is critical for HCDC Class Record files which use merged cells
+                    df_raw = pd.read_excel(file, sheet_name=sheet_name, header=None)
+                    
+                    # Find the header row (contains LAST NAME, FIRST NAME, ID NUMBER)
+                    header_row = None
+                    for i in range(len(df_raw)):
+                        row = df_raw.iloc[i]
+                        row_str = ' '.join(str(c) for c in row if pd.notna(c)).lower()
+                        if 'last name' in row_str and 'first name' in row_str and 'id number' in row_str:
+                            header_row = i
+                            break
+                    
+                    if header_row is None:
+                        # Fallback: try with just LAST NAME and FIRST NAME
+                        for i in range(len(df_raw)):
+                            row = df_raw.iloc[i]
+                            row_str = ' '.join(str(c) for c in row if pd.notna(c)).lower()
+                            if 'last name' in row_str and 'first name' in row_str:
+                                header_row = i
+                                break
+                    
+                    if header_row is None:
+                        # Cannot find header, skip this sheet
+                        flash(f'Could not find header row in sheet: {sheet_name}', 'warning')
+                        continue
+                    
+                    # Set the header and drop the header row
+                    df = df_raw.iloc[header_row:].copy()
+                    df.columns = df.iloc[0]
+                    df = df.drop(header_row).reset_index(drop=True)
+                    df = df.dropna(how='all')
+                    
+                    # Find start of student data (skip Items:, Date: rows)
+                    start_row = 0
+                    for i in range(len(df)):
+                        row = df.iloc[i]
+                        row_str = ' '.join(str(c) for c in row if pd.notna(c)).lower()
+                        
+                        if any(p in row_str for p in [
+                            'items:', 'date:', 'type names', 'tinted cells',
+                            'student information', 'category weights', 'grade distribution'
+                        ]):
+                            start_row = i + 1
+                            continue
+                        
+                        # Check for student data
+                        has_data = False
+                        for col in ['LAST NAME', 'FIRST NAME', 'ID NUMBER']:
+                            if col in df.columns:
+                                val = row.get(col)
+                                if pd.notna(val) and str(val).strip():
+                                    has_data = True
+                                    break
+                        if has_data:
+                            start_row = i
+                            break
+                    
+                    if start_row > 0:
+                        df = df.iloc[start_row:].copy().reset_index(drop=True)
                     
                     # Try to find course info in the first few rows
                     # HCDC format often has course info in first rows
@@ -2301,41 +2359,6 @@ def import_grades():
                             # If this is the first non-grade column, assume it's a name column
                             if not student_cols:
                                 student_cols['full_name'] = col
-                    
-                    # Find where the actual student data starts
-                    # Skip header rows that contain course metadata
-                    start_row = 0
-                    for i in range(len(df)):
-                        row = df.iloc[i]
-                        row_str = ' '.join(str(cell) for cell in row).lower()
-                        
-                        # Skip rows that contain course metadata
-                        if any(pattern in row_str for pattern in [
-                            'time:', 'days:', 'room:', 'schedule', '·', 'lec', 'lab',
-                            'section', 'instructor', 'professor', 'teacher',
-                            'semester', 'school year', 'academic year',
-                            'course code', 'course title', 'subject',
-                            'description', 'prerequisite', 'credits',
-                            'no. of students', 'class size'
-                        ]):
-                            start_row = i + 1
-                            continue
-                        
-                        # Also skip rows where first column is not a number
-                        first_val = row.iloc[0] if len(row) > 0 else None
-                        if first_val is None or pd.isna(first_val):
-                            start_row = i + 1
-                            continue
-                        
-                        # If we get here, this might be the start of student data
-                        # Verify by checking if it looks like a student row
-                        has_name = any(
-                            pd.notna(row.get(col)) and str(row.get(col)).strip()
-                            for col in student_cols.values()
-                        )
-                        if has_name:
-                            start_row = i
-                            break
                     
                     # If we have student columns, import students
                     if student_cols:
