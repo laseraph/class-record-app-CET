@@ -2217,9 +2217,9 @@ def import_grades():
                 db.rollback()
                 flash(f'Error importing file: {str(e)}', 'error')
                 return redirect(url_for('import_grades'))
-    else:
-        flash('No file selected', 'error')
-        return redirect(url_for('import_grades'))
+        else:
+            flash('No file selected', 'error')
+            return redirect(url_for('import_grades'))
     
     return render_template('import_grades.html')
 
