@@ -23,7 +23,9 @@ import io
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-in-production'
 
-DATABASE = 'class_record_instance.db'
+# Allow database path to be configured via environment variable
+# Default to 'class_record_instance.db' in current directory
+DATABASE = os.environ.get('HCDC_DATABASE_PATH', 'class_record_instance.db')
 
 
 def get_db():
@@ -2025,24 +2027,24 @@ def import_grades():
                 
                 # Recalculate grades for this course
                 recalculate_all_grades(course_id)
+                
+                flash(f'Import complete! {imported_courses} courses, {imported_students} students, {imported_grades} grades imported.', 'success')
+                return redirect(url_for('dashboard'))
             
-            flash(f'Import complete! {imported_courses} courses, {imported_students} students, {imported_grades} grades imported.', 'success')
-            return redirect(url_for('dashboard'))
-        
-    except Exception as e:
-        db.rollback()
-        flash(f'Error importing file: {str(e)}', 'error')
+            except Exception as e:
+                db.rollback()
+                flash(f'Error importing file: {str(e)}', 'error')
+                return redirect(url_for('import_grades'))
+    else:
+        flash('No file selected', 'error')
         return redirect(url_for('import_grades'))
-        else:
-            flash('No file selected', 'error')
-            return redirect(url_for('import_grades'))
     
     return render_template('import_grades.html')
 
 
 if __name__ == '__main__':
-    # Clean up old database
-    if os.path.exists(DATABASE):
+    # Only clean up database if it's the default location (development mode)
+    if DATABASE == 'class_record_instance.db' and os.path.exists(DATABASE):
         os.remove(DATABASE)
     
     # Initialize and run

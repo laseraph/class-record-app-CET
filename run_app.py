@@ -8,24 +8,25 @@ import os
 import sys
 import threading
 import webbrowser
-from app_instance import app, init_db
 
 # Setup data directory in user's home
 HOME_DIR = os.path.expanduser('~')
 DATA_DIR = os.path.join(HOME_DIR, '.hcdc_class_record')
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Update database path
-import app_instance
-app_instance.DATABASE = os.path.join(DATA_DIR, 'class_record.db')
+# Set database path before importing app_instance
+os.environ['HCDC_DATABASE_PATH'] = os.path.join(DATA_DIR, 'class_record.db')
+
+# Now import after setting the path
+from app_instance import app, init_db
 
 # Initialize the database
-print("🔧 Initializing database...")
+print("📁 Initializing database...")
 init_db()
 print("✅ Database initialized!")
 
 print("🚀 Starting HCDC Class Record...")
-print(f"📁 Data will be stored in: {DATA_DIR}")
+print(f"📊 Data will be stored in: {DATA_DIR}")
 
 def run_server():
     """Run Flask server"""
@@ -45,4 +46,4 @@ if __name__ == '__main__':
         while True:
             pass
     except KeyboardInterrupt:
-        print("\n🛑 Shutting down...")
+        print("\n❌ Shutting down...")
