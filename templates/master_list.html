@@ -22,17 +22,26 @@
     <p class="subtitle">All students across all courses</p>
     
     <!-- Summary Stats -->
+    {% set total_students = students|length %}
+    {% set total_passed = 0 %}
+    {% set total_failed = 0 %}
+    {% for cs in course_stats %}
+        {% set total_passed = total_passed + cs.passed %}
+        {% set total_failed = total_failed + cs.failed %}
+    {% endfor %}
+    {% set overall_pass_rate = (total_passed / total_students * 100) if total_students > 0 else 0 %}
+    
     <div class="stat-row" style="margin-top: 20px;">
         <div class="stat-card">
             <div class="stat-value">{{ total_students }}</div>
             <div class="stat-label">Total Students</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ passed_students }}</div>
+            <div class="stat-value">{{ total_passed }}</div>
             <div class="stat-label">Passed</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ failed_students }}</div>
+            <div class="stat-value">{{ total_failed }}</div>
             <div class="stat-label">Failed</div>
         </div>
         <div class="stat-card">
@@ -43,13 +52,14 @@
 </div>
 
 <!-- Per-Course Breakdown -->
-{% for course in courses %}
+{% for cs in course_stats %}
+{% if cs.total > 0 %}
 <div class="card" style="margin-top: 20px;">
     <h2 style="margin: 0 0 16px 0; font-size: 16px;">
         <span style="background: var(--hcdc-primary-light); color: var(--hcdc-primary); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
-            {{ course.course_code }}
+            {{ cs.course.course_code }}
         </span>
-        {{ course.course_title }} ({{ course.student_count }} students)
+        {{ cs.course.course_title }} ({{ cs.total }} students)
     </h2>
     
     <div class="table-container">
@@ -59,28 +69,18 @@
                     <th>#</th>
                     <th>Student</th>
                     <th>ID Number</th>
-                    <th>Final Grade</th>
-                    <th>Letter</th>
-                    <th>Status</th>
+                    <th>Grades</th>
                 </tr>
             </thead>
             <tbody>
-                {% for item in course.roster %}
+                {% for item in students %}
+                {% set student = item.student %}
+                {% set grades_str = item.grades %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td><strong>{{ item.student.last_name }}, {{ item.student.first_name }}</strong></td>
-                    <td>{{ item.student.id_number }}</td>
-                    <td>{{ "%.2f"|format(item.grade.final_grade) if item.grade else '-' }}%</td>
-                    <td>{{ item.grade.letter_grade if item.grade else '-' }}</td>
-                    <td>
-                        {% if item.grade %}
-                            <span class="pill {% if item.grade.remarks == 'Passed' %}pass{% else %}fail{% endif %}">
-                                {{ item.grade.remarks }}
-                            </span>
-                        {% else %}
-                            <span class="pill drop">-</span>
-                        {% endif %}
-                    </td>
+                    <td><strong>{{ student.last_name }}, {{ student.first_name }}</strong></td>
+                    <td>{{ student.id_number }}</td>
+                    <td>{{ grades_str }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -89,18 +89,16 @@
     
     <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px;">
         <span style="color: var(--muted);">
-            <i class="bi bi-check-circle" style="color: var(--ok);"></i> Passed: {{ course.passed }}
+            <i class="bi bi-check-circle" style="color: var(--ok);"></i> Passed: {{ cs.passed }}
         </span>
         <span style="color: var(--muted);">
-            <i class="bi bi-x-circle" style="color: var(--bad);"></i> Failed: {{ course.failed }}
+            <i class="bi bi-x-circle" style="color: var(--bad);"></i> Failed: {{ cs.failed }}
         </span>
         <span style="color: var(--muted);">
-            <i class="bi bi-percent"></i> Pass Rate: {{ course.pass_rate }}%
-        </span>
-        <span style="color: var(--muted); margin-left: auto;">
-            <i class="bi bi-graph-up"></i> Average: {{ "%.2f"|format(course.avg) }}%
+            <i class="bi bi-percent"></i> Pass Rate: {{ cs.pass_rate }}%
         </span>
     </div>
 </div>
+{% endif %}
 {% endfor %}
 {% endblock %}
