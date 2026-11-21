@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Import Existing Grade Sheet - HCDC Class Record{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 16px;">
+    <a href="{{ url_for('dashboard') }}" class="course-btn" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="section-header">
+        <h1 style="margin: 0;">Import Existing Grade Sheet</h1>
+    </div>
+    
+    <p class="subtitle" style="margin-bottom: 20px;">
+        Upload your existing Excel grade sheet (e.g., 5mPf7jb1-ClassRecord1stSem2627-OLD-BACKUP.xlsx) 
+        and it will automatically import all courses, students, and grades.
+    </p>
+    
+    <div class="notice info" style="margin-bottom: 20px;">
+        <p><strong><i class="bi bi-info-circle"></i> Supported Formats:</strong></p>
+        <ul style="margin: 10px 0; padding-left: 20px; font-size: 13px;">
+            <li>Excel files (.xlsx, .xls)</li>
+            <li>Multiple sheets (one per course)</li>
+            <li>Standard HCDC Class Record format</li>
+            <li>Columns: Student Name, ID Number, Email, Grades</li>
+        </ul>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data" style="margin-top: 20px;">
+        <div class="form-group">
+            <label for="file">Select Excel File <span style="color: var(--hcdc-secondary);">*</span></label>
+            <input type="file" id="file" name="file" accept=".xlsx,.xls" required>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+                Choose your existing grade sheet Excel file
+            </div>
+        </div>
+        
+        <div class="actions" style="margin-top: 24px;">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-upload"></i> Import Grade Sheet
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="bi bi-x"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="card" style="margin-top: 20px;">
+    <h2 style="margin: 0 0 16px 0; font-size: 16px;">What Gets Imported?</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+        <div style="background: var(--surface); border-radius: 8px; padding: 16px; border: 1px solid var(--border);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="background: var(--hcdc-primary-light); color: var(--hcdc-primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                    <i class="bi bi-book"></i>
+                </span>
+            </div>
+            <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700;">Courses</h3>
+            <p style="margin: 0; font-size: 12px; color: var(--muted);">
+                Each sheet becomes a course. Course code and title are extracted from sheet name.
+            </p>
+        </div>
+        
+        <div style="background: var(--surface); border-radius: 8px; padding: 16px; border: 1px solid var(--border);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="background: var(--hcdc-primary-light); color: var(--hcdc-primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                    <i class="bi bi-people"></i>
+                </span>
+            </div>
+            <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700;">Students</h3>
+            <p style="margin: 0; font-size: 12px; color: var(--muted);">
+                All students from each sheet are imported with their ID numbers and email addresses.
+            </p>
+        </div>
+        
+        <div style="background: var(--surface); border-radius: 8px; padding: 16px; border: 1px solid var(--border);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="background: var(--hcdc-primary-light); color: var(--hcdc-primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                    <i class="bi bi-percent"></i>
+                </span>
+            </div>
+            <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700;">Grades</h3>
+            <p style="margin: 0; font-size: 12px; color: var(--muted);">
+                All grade columns are imported as grading components with their respective scores.
+            </p>
+        </div>
+        
+        <div style="background: var(--surface); border-radius: 8px; padding: 16px; border: 1px solid var(--border);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="background: var(--hcdc-primary-light); color: var(--hcdc-primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                    <i class="bi bi-list-task"></i>
+                </span>
+            </div>
+            <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700;">Components</h3>
+            <p style="margin: 0; font-size: 12px; color: var(--muted);">
+                Grade columns are automatically mapped to Prelim-Mid or Semis-Final components.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 20px;">
+    <h2 style="margin: 0 0 16px 0; font-size: 16px;">Import Options</h2>
+    
+    <div style="background: var(--surface); border-radius: 8px; padding: 16px; border: 1px solid var(--border);">
+        <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700;">
+            <i class="bi bi-gear"></i> Automatic Mapping
+        </h3>
+        <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--muted);">
+            The importer automatically:
+        </p>
+        <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: var(--muted);">
+            <li>Detects course information from sheet names</li>
+            <li>Identifies student columns (Name, ID, Email)</li>
+            <li>Maps grade columns to Prelim-Mid or Semis-Final periods</li>
+            <li>Creates grading components for each grade column</li>
+            <li>Calculates final grades automatically</li>
+        </ul>
+    </div>
+    
+    <div style="background: var(--surface); border-radius: 8px; padding: 16px; margin-top: 12px; border: 1px solid var(--border);">
+        <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700;">
+            <i class="bi bi-exclamation-triangle"></i> Notes
+        </h3>
+        <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--muted);">
+            Important considerations:
+        </p>
+        <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: var(--muted);">
+            <li>Existing data will not be overwritten (new courses/students will be added)</li>
+            <li>Duplicate students (same ID number) will be skipped</li>
+            <li>Large files may take a few seconds to import</li>
+            <li>After import, review the data in the app and adjust as needed</li>
+        </ul>
+    </div>
+</div>
+
+<div style="margin-top: 20px; text-align: center; font-size: 12px; color: var(--muted);">
+    <i class="bi bi-file-earmark-excel"></i> Supports standard HCDC Class Record Excel format
+</div>
+{% endblock %}

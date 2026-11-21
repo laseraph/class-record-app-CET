@@ -1506,6 +1506,246 @@ def export_course_pdf(course_id):
                      download_name=f"{course['course_code'].replace(' ', '_')}_ClassRecord.pdf")
 
 
+@app.route('/import-grades', methods=['GET', 'POST'])
+def import_grades():
+    """
+    Import existing grade sheet from Excel file
+    Supports HCDC Class Record Excel format with multiple sheets per course
+    """
+    db = get_db()
+    cursor = db.cursor()
+    
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if file and file.filename:
+            try:
+                # Check file extension
+                if not file.filename.endswith(('.xlsx', '.xls')):
+                    flash('Please upload an Excel file (.xlsx or .xls)', 'error')
+                    return redirect(url_for('import_grades'))
+                
+                # Read Excel file
+                xls = pd.ExcelFile(file)
+                
+                # Get all sheet names (each sheet is a course)
+                sheet_names = xls.sheet_names
+                
+                # Process each sheet (course)
+                imported_courses = 0
+                imported_students = 0
+                imported_grades = 0
+                
+                for sheet_name in sheet_names:
+                    # Try to parse course info from sheet name
+                    # Common format: "CourseCode - CourseTitle" or "CourseTitle (CourseCode)"
+                    course_code = sheet_name.split(' - ')[0] if ' - ' in sheet_name else sheet_name.split('(')[0].strip()
+                    course_title = sheet_name.split(' - ')[1] if ' - ' in sheet_name else sheet_name.split('(')[0].strip()
+                    
+                    # Read the sheet
+                    df = pd.read_excel(file, sheet_name=sheet_name)
+                    
+                    # Try to find course info in the first few rows
+                    # HCDC format often has course info in first rows
+                    course_info_found = False
+                    for i in range(min(5, len(df))):
+                        row = df.iloc[i]
+                        for col in df.columns:
+                            cell = str(row[col])
+                            if 'Course' in cell or 'Subject' in cell or 'Code' in cell:
+                                # Try to extract course details
+                                course_code = cell
+                                course_title = sheet_name
+                                course_info_found = True
+                                break
+                        if course_info_found:
+                            break
+                    
+                    # Create or find the course
+                    cursor.execute('SELECT id FROM courses WHERE course_code = ?', (course_code,))
+                    course = cursor.fetchone()
+                    
+                    if not course:
+                        # Create new course
+                        cursor.execute('''
+                            INSERT INTO courses (course_code, course_title, offering_number, description)
+                            VALUES (?, ?, '1', ?)
+                        ''', (course_code, course_title, f'Imported from {sheet_name}'))
+                        db.commit()
+                        course_id = cursor.lastrowid
+                        imported_courses += 1
+                    else:
+                        course_id = course['id']
+                    
+                    # Find student data columns
+                    # Look for columns with student names, ID numbers, grades
+                    student_cols = {}
+                    for col in df.columns:
+                        col_name = str(col).strip().lower()
+                        if 'name' in col_name or 'student' in col_name:
+                            if 'last' in col_name:
+                                student_cols['last_name'] = col
+                            elif 'first' in col_name:
+                                student_cols['first_name'] = col
+                            else:
+                                # Assume it's full name, try to split
+                                student_cols['full_name'] = col
+                        elif 'id' in col_name or 'number' in col_name:
+                            student_cols['id_number'] = col
+                        elif 'email' in col_name:
+                            student_cols['email'] = col
+                    
+                    # If we have student columns, import students
+                    if student_cols:
+                        for _, row in df.iterrows():
+                            # Skip header rows
+                            if pd.isna(row.iloc[0]) if len(row) > 0 else False:
+                                continue
+                            
+                            last_name = ''
+                            first_name = ''
+                            id_number = ''
+                            email = ''
+                            
+                            if 'last_name' in student_cols:
+                                last_name = str(row[student_cols['last_name']]).strip()
+                            if 'first_name' in student_cols:
+                                first_name = str(row[student_cols['first_name']]).strip()
+                            elif 'full_name' in student_cols:
+                                full_name = str(row[student_cols['full_name']]).strip()
+                                if full_name:
+                                    parts = full_name.split(',')
+                                    if len(parts) == 2:
+                                        last_name = parts[0].strip()
+                                        first_name = parts[1].strip()
+                                    else:
+                                        last_name = full_name
+                            
+                            if 'id_number' in student_cols:
+                                id_number = str(row[student_cols['id_number']]).strip()
+                            if 'email' in student_cols:
+                                email = str(row[student_cols['email']]).strip()
+                            
+                            if not last_name and not first_name:
+                                continue
+                            
+                            # Check if student exists
+                            cursor.execute('SELECT id FROM students WHERE id_number = ?', (id_number,))
+                            student = cursor.fetchone()
+                            
+                            if not student:
+                                # Create new student
+                                cursor.execute('''
+                                    INSERT INTO students (last_name, first_name, id_number, email)
+                                    VALUES (?, ?, ?, ?)
+                                ''', (last_name, first_name, id_number, email))
+                                db.commit()
+                                student_id = cursor.lastrowid
+                                imported_students += 1
+                            else:
+                                student_id = student['id']
+                            
+                            # Add student to course if not already enrolled
+                            cursor.execute('SELECT id FROM course_students WHERE course_id = ? AND student_id = ?',
+                                         (course_id, student_id))
+                            if not cursor.fetchone():
+                                cursor.execute('INSERT INTO course_students (course_id, student_id) VALUES (?, ?)',
+                                             (course_id, student_id))
+                                db.commit()
+                    
+                    # Import grades
+                    # Look for grade columns
+                    grade_columns = []
+                    for col in df.columns:
+                        col_name = str(col).strip().lower()
+                        if any(x in col_name for x in ['prelim', 'mid', 'semis', 'final', 'grade', 'score', 'exam', 'quiz', 'assignment']):
+                            grade_columns.append(col)
+                    
+                    # For each grade column, try to map to components
+                    for grade_col in grade_columns:
+                        col_name = str(grade_col).strip()
+                        
+                        # Try to determine which component this is
+                        comp_name = col_name
+                        period = 'prelim_mid'
+                        
+                        if any(x in col_name.lower() for x in ['semis', 'final', 'semi']):
+                            period = 'semis_final'
+                        
+                        # Check if component exists
+                        cursor.execute('SELECT id FROM grading_components WHERE course_id = ? AND name = ?',
+                                     (course_id, comp_name))
+                        component = cursor.fetchone()
+                        
+                        if not component:
+                            # Create the component
+                            weight = 0
+                            if 'prelim' in col_name.lower() or 'mid' in col_name.lower():
+                                weight = 25 if 'exam' in col_name.lower() else 10
+                            elif 'semis' in col_name.lower() or 'final' in col_name.lower():
+                                weight = 25 if 'exam' in col_name.lower() else 10
+                            
+                            cursor.execute('''
+                                INSERT INTO grading_components (course_id, name, category, prelim_mid_weight, semis_final_weight)
+                                VALUES (?, ?, 'major_exam', ?, ?)
+                            ''', (course_id, comp_name, weight if period == 'prelim_mid' else 0, weight if period == 'semis_final' else 0))
+                            db.commit()
+                            component_id = cursor.lastrowid
+                        else:
+                            component_id = component['id']
+                        
+                        # Create instance for this component
+                        cursor.execute('SELECT id FROM component_instances WHERE component_id = ? AND course_id = ? AND period = ?',
+                                     (component_id, course_id, period))
+                        instance = cursor.fetchone()
+                        
+                        if not instance:
+                            cursor.execute('''
+                                INSERT INTO component_instances (component_id, course_id, instance_number, title, max_score, weight_fraction, period)
+                                VALUES (?, ?, 1, ?, 100, 1.0, ?)
+                            ''', (component_id, course_id, comp_name, period))
+                            db.commit()
+                            instance_id = cursor.lastrowid
+                        else:
+                            instance_id = instance['id']
+                        
+                        # Import scores for each student
+                        for _, row in df.iterrows():
+                            # Get student ID
+                            if 'id_number' in student_cols:
+                                id_number = str(row[student_cols['id_number']]).strip()
+                                cursor.execute('SELECT id FROM students WHERE id_number = ?', (id_number,))
+                                student = cursor.fetchone()
+                                if student:
+                                    student_id = student['id']
+                                    score = row.get(grade_col)
+                                    if pd.notna(score):
+                                        try:
+                                            score = float(score)
+                                            cursor.execute('''
+                                                INSERT OR REPLACE INTO scores (course_id, student_id, instance_id, score)
+                                                VALUES (?, ?, ?, ?)
+                                            ''', (course_id, student_id, instance_id, score))
+                                            imported_grades += 1
+                                        except:
+                                            pass
+                
+                # Recalculate all grades
+                recalculate_all_grades()
+                
+                flash(f'Import complete! {imported_courses} courses, {imported_students} students, {imported_grades} grades imported.', 'success')
+                return redirect(url_for('dashboard'))
+                
+            except Exception as e:
+                db.rollback()
+                flash(f'Error importing file: {str(e)}', 'error')
+                return redirect(url_for('import_grades'))
+        else:
+            flash('No file selected', 'error')
+            return redirect(url_for('import_grades'))
+    
+    return render_template('import_grades.html')
+
+
 if __name__ == '__main__':
     # Clean up old database
     if os.path.exists(DATABASE):
