@@ -2022,11 +2022,11 @@ def import_grades():
                                             imported_grades += 1
                                         except:
                                             pass
+                    
+                # Recalculate grades for this course
+                recalculate_all_grades(course_id)
                 
-                # Recalculate all grades
-                recalculate_all_grades()
-                
-                flash(f'Import complete! {imported_courses} courses, {imported_students} students, {imported_grades} grades imported.', 'success')
+            flash(f'Import complete! {imported_courses} courses, {imported_students} students, {imported_grades} grades imported.', 'success')
                 return redirect(url_for('dashboard'))
                 
             except Exception as e:
