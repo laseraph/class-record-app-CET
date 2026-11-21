@@ -2549,7 +2549,6 @@ def import_grades():
                 
                 flash(f'Import complete! {imported_courses} courses, {imported_students} students, {imported_grades} grades imported.', 'success')
                 return redirect(url_for('dashboard'))
-            
             except Exception as e:
                 db.rollback()
                 flash(f'Error importing file: {str(e)}', 'error')

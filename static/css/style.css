@@ -18,16 +18,19 @@
     --card: #ffffff;
     --surface: #f8fafc;
     
-    /* Status Colors */
-    --ok: #166534;
-    --ok-bg: #f0fdf4;
-    --ok-border: #bbf7d0;
-    --bad: #800000;
-    --bad-bg: #fef2f2;
-    --bad-border: #fecaca;
-    --warn: #92400e;
-    --warn-bg: #fffbeb;
-    --warn-border: #fde68a;
+    /* Status Colors - Using HCDC scheme for consistency */
+    --ok: #ffffff;
+    --ok-bg: #800000;
+    --ok-border: #660000;
+    --bad: #ffffff;
+    --bad-bg: #800000;
+    --bad-border: #660000;
+    --warn: #ffffff;
+    --warn-bg: #005AB5;
+    --warn-border: #004A95;
+    --info: #ffffff;
+    --info-bg: #005AB5;
+    --info-border: #004A95;
     
     /* Font */
     --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
@@ -285,7 +288,7 @@ html.dark-mode h6 {
 }
 
 .notice strong {
-    color: var(--ink);
+    color: #ffffff;
 }
 
 .notice p {
@@ -297,20 +300,20 @@ html.dark-mode h6 {
 }
 
 .notice.success {
-    color: var(--ok);
+    color: #ffffff;
     background: var(--ok-bg);
     border-color: var(--ok-border);
 }
 
 .notice.error {
-    color: var(--bad);
+    color: #ffffff;
     background: var(--bad-bg);
     border-color: var(--bad-border);
 }
 
 .notice.info {
-    color: var(--hcdc-primary);
-    background: var(--hcdc-primary-light);
+    color: #ffffff;
+    background: var(--hcdc-primary);
     border-color: var(--hcdc-primary);
 }
 
@@ -320,7 +323,7 @@ html.dark-mode .notice {
 }
 
 html.dark-mode .notice strong {
-    color: var(--ink) !important;
+    color: #ffffff !important;
 }
 
 html.dark-mode .notice.success {
@@ -345,6 +348,23 @@ html.dark-mode .notice.warning {
     color: #ffffff !important;
     background: var(--warn-bg) !important;
     border-color: var(--warn-border) !important;
+}
+
+/* Light mode notice styles - ensure visibility */
+html:not(.dark-mode) .notice.success {
+    color: #ffffff !important;
+}
+
+html:not(.dark-mode) .notice.error {
+    color: #ffffff !important;
+}
+
+html:not(.dark-mode) .notice.info {
+    color: #ffffff !important;
+}
+
+html:not(.dark-mode) .notice.warning {
+    color: #ffffff !important;
 }
 
 /* Form Styles */

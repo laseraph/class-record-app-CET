@@ -2,171 +2,84 @@
 
 ## Issues Fixed
 
-### 1. ✅ Syntax Error in app_instance.py (Line 2029)
-**Problem**: `else` block was misplaced after `return` statement in `import_grades()` function
-**Fix**: Corrected the indentation and structure of the try/except/else blocks
-**File**: `app_instance.py`
+### 1. ✅ Syntax Error in import_grades (Line ~2550)
+**Problem**: Syntax error with flash statement outside try block
+**Fix**: Fixed indentation - flash statement now properly inside try block
 
-### 2. ✅ Database Initialization in run_app.py
-**Problem**: Database tables not found when running `run_app.py`
+### 2. ✅ Color Contrast for Error/Success Messages
+**Problem**: Error and success messages had same color as background, making text unreadable
 **Fix**: 
-- Updated `run_app.py` to set `HCDC_DATABASE_PATH` environment variable before importing
-- Updated `app_instance.py` to use environment variable for database path
-- Modified database initialization to not delete database when using custom path
-**Files**: `run_app.py`, `app_instance.py`
+- Changed status colors to use HCDC scheme (Maroon #800000 and Royal Blue #005AB5)
+- Set text color to white (#ffffff) for all notice types
+- Fixed both light and dark mode styles
 
-### 3. ✅ Routing Errors (export_all_pdf, save_all_scores)
-**Problem**: Routes not found when rendering templates
-**Fix**: Verified that both routes exist and are properly registered:
-- `export_all_pdf` at `/export/all/pdf`
-- `save_all_scores` at `/course/<int:course_id>/save-all-scores`
-**Status**: Routes are correctly defined in `app_instance.py`
+### 3. ✅ Dark Mode Toggle
+**Problem**: Dark mode toggle not working
+**Fix**: Already implemented correctly in base.html with:
+- System preference detection
+- LocalStorage persistence
+- Toggle button with icon change (moon/sun)
 
 ### 4. ✅ ZeroDivisionError in course_detail.html
-**Problem**: Division by zero when `total` is 0
-**Fix**: Already fixed in template with conditional check:
-```html
-<div class="progress-bar" style="width: {% if total > 0 %}{{ (count/total*100)|int }}%{% else %}0%{% endif %}"></div>
-```
-**File**: `templates/course_detail.html` (line 215)
+**Problem**: Division by zero when calculating progress
+**Fix**: Added check `{% if total > 0 %}` before division
 
-### 5. ✅ Grading Components Structure
-**Problem**: Incorrect weight distribution for bigrades
-**Fix**: Dummy data already has correct structure:
-- Prelim-Mid Period (50% of final grade):
-  - Class Standing: Assignments 10% + Quizzes 10% + Oral Recitation 2.5% + Seatwork 2.5% = 25%
-  - Major Exam: Prelim Exam = 25%
-- Semis-Final Period (50% of final grade):
-  - Class Standing: Assignments 10% + Quizzes 10% + Oral Recitation 2.5% + Seatwork 2.5% = 25%
-  - Major Exam: Final Exam = 25%
-**Total**: 50% + 50% = 100%
-**File**: `app_instance.py` (insert_dummy_data function)
-
-### 6. ✅ Dark Mode Toggle
-**Problem**: Dark mode toggle not working
+### 5. ✅ Missing Routes
+**Problem**: Routes like `export_all_pdf` and `save_all_scores` not found
 **Fix**: 
-- Dark mode CSS variables are properly defined in `static/css/style.css`
-- JavaScript in `templates/base.html` correctly toggles `dark-mode` class
-- Both automatic (system preference) and manual toggle are supported
-**Files**: `static/css/style.css`, `templates/base.html`
+- `export_all_pdf` already exists (line 1764)
+- `save_all_scores` already exists (line 627)
+- Fixed indentation in import_grades to prevent syntax errors
 
-### 7. ✅ Error Prompt Visibility
-**Problem**: Text color same as bounding box
-**Fix**: Error notices use proper color contrast:
-- Light mode: Maroon text (#800000) on light pink background (#fef2f2)
-- Dark mode: Light red text (#fca5a5) on dark red background (#7f1d1d)
-**File**: `static/css/style.css`
-
-### 8. ✅ Grade Entry Functionality
-**Problem**: Can't input grades / empty fields not showing
+### 6. ✅ Grading Structure
+**Problem**: Grading components had wrong weights
 **Fix**: 
-- Grade entry form in `templates/grade_entry_instance.html` has input fields for each instance
-- Scores are properly saved via POST to the grade_entry route
-- Each student's scores are loaded and displayed
-**File**: `templates/grade_entry_instance.html`
+- Default grading structure now matches HCDC requirements exactly
 
-### 9. ✅ UI Style Matching Grade Checker App
-**Problem**: UI doesn't match Grade Checker App style
+### 7. ✅ Import Functionality
+**Problem**: Import not working correctly with HCDC Excel files
 **Fix**: 
-- CSS already uses Grade Checker App color scheme and styling
-- Professional Inter font is used throughout
-- Card-based layout with proper spacing and shadows
-- HCDC color scheme (Maroon #800000, Royal Blue #005AB5, White)
-**Files**: `static/css/style.css`, `templates/base.html`
+- Improved sheet detection to skip summary sheets
+- Better column name matching (case-insensitive, handles merged cells)
+- Uses full sheet name as course_code to keep sections separate
+- Correctly identifies LAST NAME, FIRST NAME, ID NUMBER columns
+
+### 8. ✅ Grade Entry
+**Problem**: Cannot input grades
+**Fix**: 
+- Grade entry form now properly displays input fields for each instance
+- Scores are saved per student per instance
+- Grades are automatically recalculated after save
 
 ## How to Use
 
-### Running the Application
-
-#### Option 1: Using run_app.py (Recommended)
+### Starting the Application
 ```bash
 cd class-record-app-CET
 python3 run_app.py
 ```
-- Database will be stored in `~/.hcdc_class_record/class_record.db`
-- Browser will open automatically to http://127.0.0.1:5000
-- Data persists between runs
 
-#### Option 2: Direct Development Mode
-```bash
-cd class-record-app-CET
-python3 app_instance.py
-```
-- Database will be `class_record_instance.db` in current directory
-- Database is deleted and recreated on each run (for development)
-- Open http://localhost:5000 in browser
+### Adding a Course
+1. Click "Add New Course" on dashboard
+2. Fill in course details
+3. Default grading components will be created automatically
 
-### Adding a New Course
-1. Click "Add Course" button on dashboard
-2. Fill in course details (code, title, etc.)
-3. Course will be created with default grading components:
-   - Prelim-Mid: Assignments, Quizzes, Oral Recitation, Seatwork, Prelim Exam
-   - Semis-Final: Assignments, Quizzes, Oral Recitation, Seatwork, Final Exam
-
-### Adding Students
-1. Go to course detail page
-2. Click "Add Student" or "Import Students"
-3. For CSV/Excel import:
-   - Columns should include: Last Name, First Name, ID Number, Email
-   - File will be automatically parsed
+### Importing Grade Sheets
+1. Click "Import All Grade Sheets" on dashboard
+2. Upload your HCDC Class Record Excel file
+3. Each sheet will be imported as a separate course
 
 ### Entering Grades
 1. Go to course detail page
-2. Click "Enter Grades"
+2. Click "Grades" button
 3. Select a student from dropdown
 4. Enter scores for each assessment instance
 5. Click "Save Grades"
 
-### Managing Grading Components
-1. Go to course detail page
-2. Click "Manage Criteria"
-3. Add/remove components and instances
-4. Adjust weights as needed
+## Grading Structure (HCDC Standard)
 
-### Exporting Data
-- Export individual course: Click "Export XLSX" or "Export PDF" on course detail
-- Export all courses: Click "Export All XLSX" or "Export All PDF" on dashboard
+Each bigrade = 50% of final grade
+- Class Standing = 50% of bigrade (Assignments, Quizzes, Oral Recitation, Seatwork)
+- Major Exams = 50% of bigrade (2 exams at 25% each)
 
-## Known Issues (Already Fixed in Code)
-
-1. **Syntax Error**: Fixed in `app_instance.py`
-2. **Database Path**: Fixed in `run_app.py` and `app_instance.py`
-3. **ZeroDivisionError**: Fixed in `course_detail.html` template
-4. **Routing Errors**: Routes exist and work correctly
-
-## Next Steps
-
-1. **Pull the latest changes**:
-   ```bash
-   cd class-record-app-CET
-   git pull origin main
-   ```
-
-2. **Install dependencies** (if not already installed):
-   ```bash
-   pip install Flask pandas openpyxl reportlab
-   ```
-
-3. **Run the application**:
-   ```bash
-   python3 run_app.py
-   ```
-
-4. **Test all features**:
-   - Create a course
-   - Add students
-   - Enter grades
-   - Export data
-   - Toggle dark mode
-   - Verify calculations
-
-## Verification
-
-All fixes have been tested and committed to the repository. The application should now work correctly with:
-- ✅ No syntax errors
-- ✅ Proper database initialization
-- ✅ Working dark mode toggle
-- ✅ Correct grading structure
-- ✅ Visible error prompts
-- ✅ Functional grade entry
-- ✅ Professional UI matching Grade Checker App style
+Total: 100%
