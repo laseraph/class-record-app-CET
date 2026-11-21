@@ -21,8 +21,7 @@ app_instance.DATABASE = os.path.join(DATA_DIR, 'class_record.db')
 
 # Initialize the database
 print("🔧 Initializing database...")
-with app.app_context():
-    init_db()
+init_db()
 print("✅ Database initialized!")
 
 print("🚀 Starting HCDC Class Record...")
