@@ -857,13 +857,67 @@ def add_students_to_course(course_id):
                     return redirect(url_for('add_students_to_course', course_id=course_id))
                 
                 imported = 0
+                # Find column indices for student data
+                ln_col = None
+                fn_col = None
+                id_col = None
+                email_col = None
+                
+                for col in df.columns:
+                    col_name = str(col).strip().lower()
+                    if 'last' in col_name or col_name in ['lastname', 'surname']:
+                        ln_col = col
+                    elif 'first' in col_name or col_name in ['firstname', 'given name']:
+                        fn_col = col
+                    elif 'name' in col_name or 'student' in col_name:
+                        # If we haven't found specific name columns, use this as full name
+                        if ln_col is None and fn_col is None:
+                            ln_col = col  # Will handle splitting later
+                    elif 'id' in col_name or 'number' in col_name or col_name in ['id no', 'id no.']:
+                        id_col = col
+                    elif 'email' in col_name:
+                        email_col = col
+                
                 for _, row in df.iterrows():
-                    last_name = str(row.get('Last Name', row.get('last_name', ''))).strip()
-                    first_name = str(row.get('First Name', row.get('first_name', ''))).strip()
-                    id_number = str(row.get('ID Number', row.get('id_number', ''))).strip()
-                    email = str(row.get('Email Address', row.get('email', ''))).strip()
+                    last_name = ''
+                    first_name = ''
+                    id_number = ''
+                    email = ''
                     
-                    if not last_name or not first_name:
+                    if ln_col is not None:
+                        val = row[ln_col]
+                        last_name = str(val).strip() if pd.notna(val) else ''
+                    if fn_col is not None:
+                        val = row[fn_col]
+                        first_name = str(val).strip() if pd.notna(val) else ''
+                    elif ln_col is not None and first_name == '':
+                        # ln_col might contain full name
+                        full_name = last_name
+                        last_name = ''
+                        if full_name:
+                            if ',' in full_name:
+                                parts = [p.strip() for p in full_name.split(',')]
+                                if len(parts) >= 2:
+                                    last_name = parts[0]
+                                    first_name = parts[1]
+                                else:
+                                    last_name = full_name
+                            else:
+                                parts = full_name.split()
+                                if len(parts) >= 2:
+                                    last_name = parts[-1]
+                                    first_name = ' '.join(parts[:-1])
+                                else:
+                                    last_name = full_name
+                    
+                    if id_col is not None:
+                        val = row[id_col]
+                        id_number = str(val).strip() if pd.notna(val) else ''
+                    if email_col is not None:
+                        val = row[email_col]
+                        email = str(val).strip() if pd.notna(val) else ''
+                    
+                    if not last_name and not first_name:
                         continue
                     
                     cursor.execute('''
@@ -2119,29 +2173,59 @@ def import_grades():
                         course_id = course['id']
                     
                     # Find student data columns
-                    # Look for columns with student names, ID numbers, grades
+                    # Look for columns with student names, ID numbers
+                    # HCDC format typically has: No., Last Name, First Name, MI, ID Number, etc.
                     student_cols = {}
                     for col in df.columns:
                         col_name = str(col).strip().lower()
-                        if 'name' in col_name or 'student' in col_name:
-                            if 'last' in col_name:
-                                student_cols['last_name'] = col
-                            elif 'first' in col_name:
-                                student_cols['first_name'] = col
-                            else:
-                                # Assume it's full name, try to split
-                                student_cols['full_name'] = col
-                        elif 'id' in col_name or 'number' in col_name:
+                        # Skip grade columns (prelim, mid, semis, final, avg, grade, etc.)
+                        if any(x in col_name for x in ['prelim', 'mid', 'semis', 'final', 'avg', 'grade', 'score', 'exam', 'quiz', 'assignment', 'seatwork', 'oral', 'project']):
+                            continue
+                        if any(x in col_name for x in ['genavg', 'gen avg', 'general average']):
+                            continue
+                        
+                        if 'last' in col_name or col_name in ['lastname', 'surname']:
+                            student_cols['last_name'] = col
+                        elif 'first' in col_name or col_name in ['firstname', 'given name']:
+                            student_cols['first_name'] = col
+                        elif 'name' in col_name or 'student' in col_name:
+                            # Full name column - try to detect if it's a name column
+                            if col_name not in ['name', 'student name', 'name of student', 'students']:
+                                continue
+                            student_cols['full_name'] = col
+                        elif 'id' in col_name or 'number' in col_name or col_name in ['id no', 'id no.']:
                             student_cols['id_number'] = col
                         elif 'email' in col_name:
                             student_cols['email'] = col
                     
+                    # If we don't have enough student columns, try harder
+                    if not student_cols or len(student_cols) < 2:
+                        # Try to find any column that looks like it contains names
+                        for col in df.columns:
+                            col_name = str(col).strip().lower()
+                            # Skip numeric columns
+                            if col_name in ['no', 'no.', '#', 'number']:
+                                continue
+                            # Skip grade-related columns
+                            if any(x in col_name for x in ['prelim', 'mid', 'semis', 'final', 'avg', 'grade', 'score', 'exam', 'quiz', 'assignment', 'seatwork', 'oral', 'project', 'gen']):
+                                continue
+                            # If this is the first non-grade column, assume it's a name column
+                            if not student_cols:
+                                student_cols['full_name'] = col
+                    
                     # If we have student columns, import students
                     if student_cols:
                         for _, row in df.iterrows():
-                            # Skip header rows
-                            if pd.isna(row.iloc[0]) if len(row) > 0 else False:
+                            # Skip header rows - check if first column is numeric or looks like a header
+                            first_val = row.iloc[0] if len(row) > 0 else None
+                            if first_val is None or pd.isna(first_val):
                                 continue
+                            # Skip if first column looks like a header (contains letters only, or is a number like 1, 2, 3)
+                            if isinstance(first_val, (int, float)) and first_val > 0 and first_val < 100:
+                                # This might be a row number, check if other columns have data
+                                has_data = any(pd.notna(row[col]) and str(row[col]).strip() for col in student_cols.values())
+                                if not has_data:
+                                    continue
                             
                             last_name = ''
                             first_name = ''
@@ -2158,12 +2242,22 @@ def import_grades():
                                 val = row[student_cols['full_name']]
                                 full_name = str(val).strip() if pd.notna(val) else ''
                                 if full_name:
-                                    parts = full_name.split(',')
-                                    if len(parts) == 2:
-                                        last_name = parts[0].strip()
-                                        first_name = parts[1].strip()
+                                    # Try to split by comma (Last, First format)
+                                    if ',' in full_name:
+                                        parts = [p.strip() for p in full_name.split(',')]
+                                        if len(parts) >= 2:
+                                            last_name = parts[0]
+                                            first_name = parts[1]
+                                        else:
+                                            last_name = full_name
                                     else:
-                                        last_name = full_name
+                                        # Try to split by space (First Last format)
+                                        parts = full_name.split()
+                                        if len(parts) >= 2:
+                                            last_name = parts[-1]  # Last name is last
+                                            first_name = ' '.join(parts[:-1])  # First name is everything before
+                                        else:
+                                            last_name = full_name
                             
                             if 'id_number' in student_cols:
                                 val = row[student_cols['id_number']]
@@ -2172,6 +2266,7 @@ def import_grades():
                                 val = row[student_cols['email']]
                                 email = str(val).strip() if pd.notna(val) else ''
                             
+                            # Skip if we don't have at least a name
                             if not last_name and not first_name:
                                 continue
                             
@@ -2200,11 +2295,23 @@ def import_grades():
                                 db.commit()
                     
                     # Import grades
-                    # Look for grade columns
+                    # Look for grade columns - be more specific to avoid picking up GenAvg, etc.
                     grade_columns = []
                     for col in df.columns:
                         col_name = str(col).strip().lower()
-                        if any(x in col_name for x in ['prelim', 'mid', 'semis', 'final', 'grade', 'score', 'exam', 'quiz', 'assignment']):
+                        # Skip GenAvg and similar summary columns
+                        if 'gen' in col_name and 'avg' in col_name:
+                            continue
+                        if 'general' in col_name and 'average' in col_name:
+                            continue
+                        if col_name in ['genavg', 'general average', 'gen avg']:
+                            continue
+                        # Look for actual grade columns
+                        if any(x in col_name for x in ['prelim', 'midterm', 'semis', 'semi', 'final']):
+                            grade_columns.append(col)
+                        elif any(x in col_name for x in ['exam', 'quiz', 'assignment', 'seatwork', 'oral', 'project']):
+                            grade_columns.append(col)
+                        elif any(x in col_name for x in ['pm', 'sf']):  # Prelim-Mid, Semis-Final
                             grade_columns.append(col)
                     
                     # For each grade column, try to map to components
