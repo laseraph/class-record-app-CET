@@ -653,6 +653,66 @@ def grade_entry(course_id):
                          semis_total=semis_total)
 
 
+@app.route('/course/<int:course_id>/save-all-scores', methods=['POST'])
+def save_all_scores(course_id):
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute('SELECT * FROM courses WHERE id = ?', (course_id,))
+    course = cursor.fetchone()
+    
+    if not course:
+        flash('Course not found', 'error')
+        return redirect(url_for('dashboard'))
+    
+    cursor.execute('''
+        SELECT ci.id, ci.max_score
+        FROM component_instances ci
+        JOIN grading_components gc ON ci.component_id = gc.id
+        WHERE ci.course_id = ?
+    ''', (course_id,))
+    instances = cursor.fetchall()
+    
+    cursor.execute('''
+        SELECT s.id FROM students s
+        JOIN course_students cs ON s.id = cs.student_id
+        WHERE cs.course_id = ?
+    ''', (course_id,))
+    students = cursor.fetchall()
+    
+    saved_count = 0
+    for student in students:
+        student_id = student['id']
+        for inst in instances:
+            instance_id = inst['id']
+            max_score = inst['max_score']
+            score_field = f'score_{instance_id}_{student_id}'
+            score = request.form.get(score_field, '')
+            
+            if score:
+                try:
+                    score = float(score)
+                    score = max(0, min(max_score, score))
+                except:
+                    score = 0
+            else:
+                score = 0
+            
+            cursor.execute('''
+                INSERT OR REPLACE INTO scores (course_id, student_id, instance_id, score)
+                VALUES (?, ?, ?, ?)
+            ''', (course_id, student_id, instance_id, score))
+            saved_count += 1
+    
+    db.commit()
+    
+    for student in students:
+        calculate_student_grade(course_id, student['id'])
+    
+    flash(f'{saved_count} scores saved successfully!', 'success')
+    return redirect(url_for('grade_entry', course_id=course_id))
+
+
 @app.route('/course/<int:course_id>/grading-criteria', methods=['GET', 'POST'])
 def grading_criteria(course_id):
     db = get_db()
